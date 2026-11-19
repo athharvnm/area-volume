@@ -1,0 +1,2523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slice &amp; Sum Geometry Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+    input[type="range"] {
+      accent-color: #0f766e;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-teal-100 selection:text-teal-900">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
+    <!-- Header Bar -->
+    <header class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
+            Visual Geometry Lab
+          </span>
+          <span id="mode-summary-pill" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+            Points → Length
+          </span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+          Slice &amp; Sum Geometry Studio
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-600 max-w-3xl">
+          Points add up to <span class="font-semibold text-slate-800">length</span>, lengths add up to <span class="font-semibold text-slate-800">area</span>, and inside slices add up to <span class="font-semibold text-slate-800">volume</span> while outer faces add up to <span class="font-semibold text-slate-800">surface area</span>.
+        </p>
+      </div>
+
+      <!-- Dimension Switcher -->
+      <nav aria-label="Dimension mode" class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80 shrink-0">
+        <button
+          id="dim-btn-1d"
+          type="button"
+          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs"
+        >
+          1D Length
+        </button>
+        <button
+          id="dim-btn-2d"
+          type="button"
+          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+        >
+          2D Area
+        </button>
+        <button
+          id="dim-btn-3d"
+          type="button"
+          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+        >
+          3D Solids
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Two-Column Grid -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <!-- Left Column: Shape Picker & Controls -->
+      <section class="lg:col-span-4 space-y-4">
+        <!-- Shape Selector Card -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-900">Choose a Shape</h2>
+            <span id="shape-count-badge" class="text-xs font-mono text-slate-500">10 shapes</span>
+          </div>
+
+          <!-- Regular / Standard Group -->
+          <div class="space-y-1.5">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Regular &amp; Standard
+            </div>
+            <div id="regular-shapes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5"></div>
+          </div>
+
+          <!-- Irregular / Compound Group -->
+          <div class="space-y-1.5 pt-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Irregular &amp; Compound
+            </div>
+            <div id="irregular-shapes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Sweep & Density Controls Card -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-900">Accumulation Controls</h2>
+            <span class="text-[11px] font-mono text-slate-400">Sweep &amp; Slices</span>
+          </div>
+
+          <!-- Sweep Progress Slider -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <label id="sweep-label" for="sweep-slider" class="font-semibold text-slate-700">
+                Sweep Along Path
+              </label>
+              <span id="sweep-percent" class="font-mono font-semibold text-teal-800">0%</span>
+            </div>
+            <input
+              id="sweep-slider"
+              type="range"
+              min="0"
+              max="1000"
+              value="0"
+              class="w-full h-2 bg-slate-200 rounded-lg"
+            />
+          </div>
+
+          <!-- Density / Slice Count Slider -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <label id="density-label" for="density-slider" class="font-semibold text-slate-700">
+                Number of Steps
+              </label>
+              <span id="density-value" class="font-mono font-semibold text-slate-800">36</span>
+            </div>
+            <input
+              id="density-slider"
+              type="range"
+              min="6"
+              max="80"
+              value="36"
+              class="w-full h-2 bg-slate-200 rounded-lg"
+            />
+            <p id="density-helper" class="text-[11px] text-slate-500 leading-snug">
+              More steps divide the path into shorter segments.
+            </p>
+          </div>
+
+          <!-- 2D Perimeter Calculation & Area Formula Strip -->
+          <div id="mode-2d-panel" class="hidden space-y-2.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-950">2D Area &amp; Perimeter</span>
+              <button
+                id="toggle-2d-perimeter-btn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-amber-600 text-white border-amber-700"
+              >
+                Highlight Rim: ON
+              </button>
+            </div>
+            <div class="text-[11px] font-mono text-emerald-900 bg-white/90 px-2.5 py-1.5 rounded-lg border border-emerald-200/70">
+              <span class="font-semibold">Area Formula:</span> <span id="area-formula-display">A = 10 × 10 = 100 cm²</span>
+            </div>
+            <div id="perimeter-2d-readout" class="text-[11px] text-slate-700 bg-white/95 p-2.5 rounded-lg border border-slate-200/80 space-y-1.5">
+              <div class="flex items-center justify-between font-mono">
+                <span class="font-semibold text-slate-800">Perimeter Formula:</span>
+                <span id="perimeter-formula-display" class="text-amber-800 font-semibold">P = 4s = 4 × 10 = 40 cm</span>
+              </div>
+              <div class="flex items-center justify-between font-mono tabular-nums">
+                <span>Total Perimeter:</span>
+                <span id="perimeter-total-display" class="font-bold text-slate-900">40.00 cm</span>
+              </div>
+              <div class="flex items-center justify-between font-mono tabular-nums">
+                <span>Outer Edge Traced:</span>
+                <span id="perimeter-swept-display" class="font-bold text-amber-800">0.00 / 40.00 cm</span>
+              </div>
+              <div class="pt-1 border-t border-slate-100 text-[11px] text-slate-700">
+                <span class="font-semibold text-slate-800">How Perimeter Is Calculated:</span>
+                <span id="perimeter-calc-steps" class="font-mono text-slate-800 block mt-0.5"></span>
+              </div>
+              <p id="perimeter-explanation-note" class="text-[11px] text-slate-600 leading-snug pt-0.5"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Interactive Canvas, Readouts & Intuition -->
+      <section class="lg:col-span-8 space-y-4">
+        <!-- Canvas Card -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="active-shape-title" class="text-base sm:text-lg font-bold text-slate-900">
+                Straight Line Segment (12 cm)
+              </h2>
+              <p id="active-shape-subtitle" class="text-xs text-slate-500">
+                Drag across the canvas or move the sweep slider to add tiny steps together.
+              </p>
+            </div>
+
+            <!-- Top-Right Play/Reset & 3D Measurement Selector near the Canvas -->
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1.5 bg-slate-100/90 border border-slate-200/90 rounded-xl p-1.5">
+                <button
+                  id="play-toggle-btn"
+                  type="button"
+                  class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white transition shadow-2xs"
+                >
+                  Play Sweep
+                </button>
+                <button
+                  id="reset-btn"
+                  type="button"
+                  class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 transition"
+                >
+                  Reset
+                </button>
+              </div>
+
+              <div id="mode-3d-toggle-wrap" class="hidden bg-slate-100/90 border border-slate-200/90 rounded-xl p-1.5 space-y-1">
+                <div class="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  What do you want to measure?
+                </div>
+                <div class="grid grid-cols-2 gap-1">
+                  <button
+                    id="mode-3d-volume-btn"
+                    type="button"
+                    class="py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs"
+                  >
+                    Inside Space (Volume)
+                  </button>
+                  <button
+                    id="mode-3d-surface-btn"
+                    type="button"
+                    class="py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900"
+                  >
+                    Outside Cover (Surface Area)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="canvas-legend" class="flex flex-wrap items-center gap-3 text-[11px] text-slate-600"></div>
+
+          <!-- Responsive Canvas Container -->
+          <div id="canvas-wrapper" class="relative w-full h-72 sm:h-96 rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden">
+            <canvas id="lab-canvas"></canvas>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+            <span id="canvas-hint">Tip: Drag horizontally across the drawing area to scrub accumulation.</span>
+            <span id="shape-formula-badge" class="font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md"></span>
+          </div>
+
+          <!-- Turn & Move Controls for 2D and 3D Shapes -->
+          <div id="transform-controls-panel" class="hidden pt-2.5 border-t border-slate-100 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mr-1">Canvas Drag:</span>
+                <button
+                  id="drag-mode-sweep-btn"
+                  type="button"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800"
+                >
+                  Scrub Sweep
+                </button>
+                <button
+                  id="drag-mode-turn-btn"
+                  type="button"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                >
+                  Turn Shape
+                </button>
+                <button
+                  id="drag-mode-move-btn"
+                  type="button"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                >
+                  Move Shape
+                </button>
+              </div>
+              <button
+                id="reset-transform-btn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+              >
+                Center &amp; Reset Turn
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <label for="turn-slider" class="font-semibold text-slate-700">Turn Angle</label>
+                  <span id="turn-value" class="font-mono font-semibold text-teal-800">0°</span>
+                </div>
+                <input
+                  id="turn-slider"
+                  type="range"
+                  min="-180"
+                  max="180"
+                  value="0"
+                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                />
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <label for="move-x-slider" class="font-semibold text-slate-700">Move Left / Right</label>
+                  <span id="move-x-value" class="font-mono font-semibold text-slate-800">0.0</span>
+                </div>
+                <input
+                  id="move-x-slider"
+                  type="range"
+                  min="-60"
+                  max="60"
+                  value="0"
+                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                />
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <label for="move-y-slider" class="font-semibold text-slate-700">Move Down / Up</label>
+                  <span id="move-y-value" class="font-mono font-semibold text-slate-800">0.0</span>
+                </div>
+                <input
+                  id="move-y-slider"
+                  type="range"
+                  min="-60"
+                  max="60"
+                  value="0"
+                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Numeric Readouts Grid -->
+        <div id="metrics-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+        <!-- 3D Outer Surface Breakdown Panel (shown when 3D Outside Cover is active) -->
+        <div id="panel-3d-surface" class="hidden bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Outside Cover = Sum of All Outer Surfaces</h3>
+              <p class="text-xs text-slate-500">
+                Imagine unwrapping or painting every outside face/curved wall of the solid and adding their flat areas together.
+              </p>
+            </div>
+            <span id="surface-total-badge" class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">
+              Total Outer Area: 0.00 cm²
+            </span>
+          </div>
+          <div id="surface-faces-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+
+        <!-- Mathematical Intuition Card with Two-Level Toggle -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-slate-900">Mathematical Intuition</h3>
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+              <button
+                id="level-kids-btn"
+                type="button"
+                class="px-3 py-1 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs"
+              >
+                Everyday &amp; Visual
+              </button>
+              <button
+                id="level-calc-btn"
+                type="button"
+                class="px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900"
+              >
+                Calculus &amp; Formal
+              </button>
+            </div>
+          </div>
+
+          <p id="intuition-primary-note" class="text-sm text-slate-700 leading-relaxed"></p>
+          <div id="intuition-details" class="rounded-xl bg-slate-50 border border-slate-200/70 p-3.5 text-xs sm:text-sm text-slate-700 space-y-2"></div>
+
+          <!-- Dedicated Guide Inside HTML: Where π, 1/3, and 4/3 Come From (shown only when relevant) -->
+          <div id="special-constants-section" class="pt-2 border-t border-slate-100 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-bold text-slate-800">Where π, 1/3, and 4/3 Come From</span>
+              <button
+                id="toggle-special-constants-btn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80 hover:bg-teal-100 transition"
+              >
+                Hide Guide
+              </button>
+            </div>
+
+            <div id="special-constants-guide" class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+              <div id="guide-card-pi" class="rounded-xl bg-amber-50/50 border border-amber-200/70 p-3 space-y-1">
+                <div class="font-bold text-amber-950 font-mono">1. Where π Comes From</div>
+                <p id="guide-pi-text" class="text-slate-700 leading-relaxed"></p>
+              </div>
+              <div id="guide-card-third" class="rounded-xl bg-teal-50/50 border border-teal-200/70 p-3 space-y-1">
+                <div class="font-bold text-teal-950 font-mono">2. Where 1/3 Comes From</div>
+                <p id="guide-third-text" class="text-slate-700 leading-relaxed"></p>
+              </div>
+              <div id="guide-card-four-thirds" class="rounded-xl bg-emerald-50/50 border border-emerald-200/70 p-3 space-y-1">
+                <div class="font-bold text-emerald-950 font-mono">3. Where 4/3 Comes From</div>
+                <p id="guide-four-thirds-text" class="text-slate-700 leading-relaxed"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function makeCircleContour(rx, ry, cx = 0, cy = 0, segments = 72) {
+      const pts = [];
+      for (let i = 0; i < segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        pts.push({
+          x: cx + rx * Math.cos(theta),
+          y: cy + ry * Math.sin(theta)
+        });
+      }
+      return pts;
+    }
+
+    function makeRegularPolygon(sides, radius, startAngle = -Math.PI / 2, rxScale = 1, ryScale = 1) {
+      const pts = [];
+      for (let i = 0; i < sides; i++) {
+        const angle = startAngle + (i / sides) * Math.PI * 2;
+        pts.push({
+          x: radius * rxScale * Math.cos(angle),
+          y: radius * ryScale * Math.sin(angle)
+        });
+      }
+      return pts;
+    }
+
+    function makeStarPolygon(pointsCount, outerR, innerR, startAngle = -Math.PI / 2) {
+      const pts = [];
+      const totalVerts = pointsCount * 2;
+      for (let i = 0; i < totalVerts; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const angle = startAngle + (i / totalVerts) * Math.PI * 2;
+        pts.push({
+          x: r * Math.cos(angle),
+          y: r * Math.sin(angle)
+        });
+      }
+      return pts;
+    }
+
+    function computeBounds2D(pts) {
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const p of pts) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+      return { minX, maxX, minY, maxY };
+    }
+
+    function getPolygonVerticalIntervals(pts, x) {
+      const ys = [];
+      const n = pts.length;
+      for (let i = 0; i < n; i++) {
+        const a = pts[i];
+        const b = pts[(i + 1) % n];
+        const x1 = a.x;
+        const x2 = b.x;
+        if (Math.abs(x1 - x2) < 1e-9) continue;
+        const minSegX = Math.min(x1, x2);
+        const maxSegX = Math.max(x1, x2);
+        if (x >= minSegX && x <= maxSegX) {
+          const t = (x - x1) / (x2 - x1);
+          if (t >= -1e-6 && t <= 1 + 1e-6) {
+            const yHit = a.y + t * (b.y - a.y);
+            ys.push(yHit);
+          }
+        }
+      }
+      ys.sort((a, b) => a - b);
+      const cleanYs = [];
+      for (const y of ys) {
+        if (cleanYs.length === 0 || Math.abs(y - cleanYs[cleanYs.length - 1]) > 1e-5) {
+          cleanYs.push(y);
+        }
+      }
+      const intervals = [];
+      for (let i = 0; i + 1 < cleanYs.length; i += 2) {
+        const y0 = cleanYs[i];
+        const y1 = cleanYs[i + 1];
+        if (y1 - y0 > 1e-5) {
+          intervals.push([y0, y1]);
+        }
+      }
+      return intervals;
+    }
+
+    function buildPolygon2DShape(cfg) {
+      const bounds = computeBounds2D(cfg.pts);
+      return {
+        ...cfg,
+        bounds
+      };
+    }
+
+    const SHAPES_1D = [
+      {
+        id: '1d-line',
+        name: 'Straight Line Segment (12 cm)',
+        shortName: 'Straight Line',
+        category: 'regular',
+        exactLength: 12,
+        formula: 'L = ∫_0^{12} 1 dx = 12.00 cm',
+        visualFormula: 'Length = tiny equal steps added straight across (12 cm)',
+        visualNote: 'Imagine stepping heel-to-toe along a straight ruler. Each tiny step has the exact same size—add up all the steps from start to finish and you get 12 cm!',
+        note: 'Every point along a straight line advances at a constant rate ds = dx. Summing tiny segments from x = 0 to x = 12 gives exact length 12.00 cm.',
+        samplePoint(t) {
+          return { x: -0.82 + 1.64 * t, y: 0 };
+        }
+      },
+      {
+        id: '1d-circle-arc',
+        name: 'Full Circle Rim / Circumference (r = 5 cm)',
+        shortName: 'Circle Rim',
+        category: 'regular',
+        exactLength: Number((2 * Math.PI * 5).toFixed(2)),
+        formula: 'C = ∮ r dθ = 2πr ≈ 31.42 cm',
+        visualFormula: 'Why π? Going around the curved edge is just over 3× (π ≈ 3.14) the straight trip across!',
+        visualNote: 'A straight path across a circle’s center is its diameter, while walking around the curved edge bends at every step—taking about 3.14 times (π) as far as crossing straight through!',
+        note: 'A circle curves evenly at every point. Summing tiny arc elements ds = r dθ around a full turn (0 to 2π) yields circumference 2πr ≈ 31.42 cm, where π relates rim length to diameter.',
+        samplePoint(t) {
+          const r = 0.68;
+          const ang = -Math.PI / 2 + t * Math.PI * 2;
+          return { x: r * Math.cos(ang), y: r * Math.sin(ang) };
+        }
+      },
+      {
+        id: '1d-semicircle',
+        name: 'Semicircle Arc (r = 6 cm)',
+        shortName: 'Semicircle',
+        category: 'regular',
+        exactLength: Number((Math.PI * 6).toFixed(2)),
+        formula: 'L = ∫_0^π r dθ = πr ≈ 18.85 cm',
+        visualFormula: 'Half-Circle Path = half of a full round trip (πr instead of 2πr)',
+        visualNote: 'Walk halfway around a round track from left to right. A full circle trip is 2πr, so half a trip around is πr—about 3.14 times the radius!',
+        note: 'Integrating ds = √(1 + (dy/dx)²) dx across a semicircle of radius 6 cm gives half the circumference: πr ≈ 18.85 cm.',
+        samplePoint(t) {
+          const r = 0.76;
+          const ang = Math.PI - t * Math.PI;
+          return { x: r * Math.cos(ang), y: 0.28 + r * 0.72 * Math.sin(ang) };
+        }
+      },
+      {
+        id: '1d-square-rim',
+        name: 'Square Perimeter Path (Side 5 cm)',
+        shortName: 'Square Rim',
+        category: 'regular',
+        exactLength: 20,
+        formula: 'P = 4 × 5 = 20.00 cm',
+        visualFormula: 'Square Rim = 4 straight sides of 5 cm joined at sharp corners',
+        visualNote: 'Walk along the first 5 cm side, turn a sharp square corner, walk 5 cm down, turn again, and keep going around all 4 sides. Adding every step gives 20 cm!',
+        note: 'Length accumulates steadily along each straight edge and turns sharply at each of the four 90° corners, totaling 4 × 5 = 20.00 cm.',
+        samplePoint(t) {
+          const pts = [
+            { x: -0.58, y: -0.58 },
+            { x: 0.58, y: -0.58 },
+            { x: 0.58, y: 0.58 },
+            { x: -0.58, y: 0.58 },
+            { x: -0.58, y: -0.58 }
+          ];
+          const segFloat = t * 4;
+          const idx = Math.min(3, Math.floor(segFloat));
+          const frac = segFloat - idx;
+          return {
+            x: pts[idx].x + (pts[idx + 1].x - pts[idx].x) * frac,
+            y: pts[idx].y + (pts[idx + 1].y - pts[idx].y) * frac
+          };
+        }
+      },
+      {
+        id: '1d-sine-wave',
+        name: 'One Sine Wave Cycle (16 cm)',
+        shortName: 'Sine Wave',
+        category: 'regular',
+        exactLength: 16,
+        formula: 'L = ∫_0^a √(1 + (dy/dx)²) dx ≈ 16.00 cm',
+        visualFormula: 'Wave Length = measuring the hilly road, not just the straight ground under it',
+        visualNote: 'A hilly roller-coaster track is longer than a flat straight road between the same two spots because going up and down adds extra path! Adding every tiny hilly step gives the true length.',
+        note: 'Because the curve rises and falls, each tiny horizontal step Δx corresponds to a slightly longer path element √(Δx² + Δy²).',
+        samplePoint(t) {
+          const x = -0.82 + 1.64 * t;
+          const y = 0.44 * Math.sin(t * Math.PI * 2);
+          return { x, y };
+        }
+      },
+      {
+        id: '1d-zigzag',
+        name: 'Irregular Zig-Zag Trail (18 cm)',
+        shortName: 'Zig-Zag Trail',
+        category: 'irregular',
+        exactLength: 18,
+        formula: 'L = ∑ √(Δx_k² + Δy_k²) = 18.00 cm',
+        visualFormula: 'Zig-Zag Path = adding every sharp back-and-forth leg together',
+        visualNote: 'Even if a path zig-zags up, down, and sideways at sharp angles, every tiny step still has a real length. Add all the steps along each slant to find the total trail length!',
+        note: 'Piecewise-linear segments accumulate length at different slopes; summing each segment’s length gives the total zig-zag distance.',
+        samplePoint(t) {
+          const verts = [
+            { x: -0.82, y: -0.35 },
+            { x: -0.38, y: 0.52 },
+            { x: 0.05, y: -0.48 },
+            { x: 0.46, y: 0.36 },
+            { x: 0.82, y: -0.25 }
+          ];
+          const segs = verts.length - 1;
+          const f = t * segs;
+          const i = Math.min(segs - 1, Math.floor(f));
+          const u = f - i;
+          return {
+            x: verts[i].x + (verts[i + 1].x - verts[i].x) * u,
+            y: verts[i].y + (verts[i + 1].y - verts[i].y) * u
+          };
+        }
+      },
+      {
+        id: '1d-spiral',
+        name: 'Unwinding Spiral (22 cm)',
+        shortName: 'Spiral Path',
+        category: 'irregular',
+        exactLength: 22,
+        formula: 'L = ∫ √(r(θ)² + (dr/dθ)²) dθ ≈ 22.00 cm',
+        visualFormula: 'Spiral Path = walking around while slowly stepping farther from the center',
+        visualNote: 'Imagine walking around a central pole while gradually moving outward in wider loops. Every tiny step adds to your total distance walked!',
+        note: 'In polar coordinates, both radius r(θ) and angle θ change continuously, giving arc element ds = √(r² + (dr/dθ)²) dθ.',
+        samplePoint(t) {
+          const turns = 2.25;
+          const ang = -Math.PI / 2 + t * turns * Math.PI * 2;
+          const r = 0.14 + 0.64 * t;
+          return { x: r * Math.cos(ang), y: r * Math.sin(ang) };
+        }
+      },
+      {
+        id: '1d-l-path',
+        name: 'Corner L-Route (14 cm)',
+        shortName: 'L-Route',
+        category: 'irregular',
+        exactLength: 14,
+        formula: 'L = L_horizontal + L_vertical = 14.00 cm',
+        visualFormula: 'L-Route = walk across first, turn a square corner, then walk up',
+        visualNote: 'Walk along the bottom hallway, turn 90° at the corner, and walk up the side hallway. Adding all the steps along both hallways gives the full route length.',
+        note: 'A two-segment orthogonal path accumulates length horizontally first and vertically second, summing directly to 14.00 cm.',
+        samplePoint(t) {
+          if (t <= 0.57) {
+            const u = t / 0.57;
+            return { x: -0.65 + 1.25 * u, y: -0.45 };
+          } else {
+            const u = (t - 0.57) / 0.43;
+            return { x: 0.60, y: -0.45 + 1.05 * u };
+          }
+        }
+      },
+      {
+        id: '1d-cubic-bend',
+        name: 'S-Bend Curve (15 cm)',
+        shortName: 'S-Bend Curve',
+        category: 'irregular',
+        exactLength: 15,
+        formula: 'L = ∫_a^b √(1 + (f′(x))²) dx ≈ 15.00 cm',
+        visualFormula: 'S-Bend = smooth curve bending first one way, then the other',
+        visualNote: 'Follow a winding river bend that curves one way and then bends back the other way. Adding tiny steps along the river bank measures how far you actually travel.',
+        note: 'Inflection points change curvature sign without interrupting the continuous sum of arc-length increments ds.',
+        samplePoint(t) {
+          const x = -0.80 + 1.60 * t;
+          const s = (t - 0.5) * 2.2;
+          const y = 0.36 * (s * s * s - 0.65 * s);
+          return { x, y };
+        }
+      },
+      {
+        id: '1d-broken-fence',
+        name: 'Stepped Ridge Line (17 cm)',
+        shortName: 'Stepped Ridge',
+        category: 'irregular',
+        exactLength: 17,
+        formula: 'L = ∑_{i=1}^6 Δs_i = 17.00 cm',
+        visualFormula: 'Stepped Ridge = uneven ridges and slopes joined end to end',
+        visualNote: 'A mountain ridge has gentle slopes, steep climbs, and flat ledges. Adding the length of every small piece along the ridge gives the total length.',
+        note: 'Multi-slope piecewise paths show that total length depends on true path distance along each piece, not just straight-line start-to-end spacing.',
+        samplePoint(t) {
+          const pts = [
+            { x: -0.82, y: -0.2 },
+            { x: -0.45, y: -0.2 },
+            { x: -0.15, y: 0.52 },
+            { x: 0.15, y: 0.05 },
+            { x: 0.52, y: 0.48 },
+            { x: 0.82, y: -0.35 }
+          ];
+          const segs = pts.length - 1;
+          const f = t * segs;
+          const i = Math.min(segs - 1, Math.floor(f));
+          const u = f - i;
+          return {
+            x: pts[i].x + (pts[i + 1].x - pts[i].x) * u,
+            y: pts[i].y + (pts[i + 1].y - pts[i].y) * u
+          };
+        }
+      }
+    ];
+
+    const squarePts = makeRegularPolygon(4, 0.72, -Math.PI / 4);
+    const rectanglePts = [
+      { x: -0.78, y: -0.42 },
+      { x: 0.78, y: -0.42 },
+      { x: 0.78, y: 0.42 },
+      { x: -0.78, y: 0.42 }
+    ];
+    const eqTriPts = makeRegularPolygon(3, 0.78, -Math.PI / 2);
+    const pentagonPts = makeRegularPolygon(5, 0.74, -Math.PI / 2);
+    const hexagonPts = makeRegularPolygon(6, 0.74, 0);
+    const trapezoidPts = [
+      { x: -0.76, y: -0.52 },
+      { x: 0.76, y: -0.52 },
+      { x: 0.44, y: 0.52 },
+      { x: -0.56, y: 0.52 }
+    ];
+    const lShapePts = [
+      { x: -0.68, y: -0.68 },
+      { x: 0.68, y: -0.68 },
+      { x: 0.68, y: -0.06 },
+      { x: -0.06, y: -0.06 },
+      { x: -0.06, y: 0.68 },
+      { x: -0.68, y: 0.68 }
+    ];
+    const arrowPts = [
+      { x: -0.76, y: -0.24 },
+      { x: 0.12, y: -0.24 },
+      { x: 0.12, y: -0.56 },
+      { x: 0.78, y: 0.0 },
+      { x: 0.12, y: 0.56 },
+      { x: 0.12, y: 0.24 },
+      { x: -0.76, y: 0.24 }
+    ];
+    const starPts = makeStarPolygon(5, 0.78, 0.34, -Math.PI / 2);
+    const customPolyPts = [
+      { x: -0.74, y: -0.22 },
+      { x: -0.24, y: -0.64 },
+      { x: 0.56, y: -0.48 },
+      { x: 0.76, y: 0.18 },
+      { x: 0.18, y: 0.62 },
+      { x: -0.58, y: 0.42 }
+    ];
+
+    const SHAPES_2D = [
+      buildPolygon2DShape({
+        id: '2d-square',
+        name: 'Square (10 × 10 cm)',
+        shortName: 'Square',
+        category: 'regular',
+        physWidth: 10,
+        physHeight: 10,
+        exactArea: 100,
+        exactPerimeter: 40,
+        pts: squarePts,
+        areaFormula: 'A = s² = 10 × 10 = 100 cm²',
+        perimeterFormula: 'P = 4s = 4 × 10 = 40 cm',
+        perimeterKidNote: 'Perimeter is the fence around the outside of the square—walk around all 4 equal 10 cm sides to get 40 cm, while Area counts the 100 little squares inside!',
+        perimeterCalcNote: 'Perimeter sums the boundary curve ∮ ds = 4s = 40 cm, whereas Area integrates vertical strips A = ∫_0^{10} 10 dx = 100 cm².',
+        formula: 'A = s² = 10 × 10 = 100 cm²',
+        visualFormula: 'Square Area = 10 cm tall strip repeated across 10 cm = 100 cm²',
+        visualNote: 'Picture standing 10 cm tall sticks side by side from left to right across a 10 cm width. Every strip has the same 10 cm height—add them all up and you get 100 cm²!',
+        note: 'Each vertical slice has constant height 10 cm. Summing length(x) · dx across width 10 cm gives exact area 100.00 cm².'
+      }),
+      buildPolygon2DShape({
+        id: '2d-rectangle',
+        name: 'Rectangle (12 × 6 cm)',
+        shortName: 'Rectangle',
+        category: 'regular',
+        physWidth: 12,
+        physHeight: 6,
+        exactArea: 72,
+        exactPerimeter: 36,
+        pts: rectanglePts,
+        areaFormula: 'A = length × width = 12 × 6 = 72 cm²',
+        perimeterFormula: 'P = 2(length + width) = 2(12 + 6) = 36 cm',
+        perimeterKidNote: 'Perimeter walks all 4 edges around the rectangle (12 + 6 + 12 + 6 = 36 cm). Area fills the inside with 6 cm tall strips across a 12 cm stretch (72 cm²).',
+        perimeterCalcNote: 'Perimeter accumulates boundary length P = 2(l + w) = 36 cm around the four sides; Area integrates constant strip height h = 6 cm across x ∈ [0, 12] to get 72 cm².',
+        formula: 'A = l × w = 12 × 6 = 72 cm²',
+        visualFormula: 'Rectangle Area = 6 cm tall strips lined up across 12 cm = 72 cm²',
+        visualNote: 'Line up 6 cm tall strips from left to right across a 12 cm long rectangle. Every strip is 6 cm tall—adding them all across 12 cm gives 72 cm²!',
+        note: 'Vertical slices maintain constant height 6 cm across a 12 cm span, integrating to A = l · w = 72.00 cm².'
+      }),
+      buildPolygon2DShape({
+        id: '2d-disk',
+        name: 'Circle (Radius 5 cm)',
+        shortName: 'Circle',
+        category: 'regular',
+        physWidth: 10,
+        physHeight: 10,
+        exactArea: Math.PI * 25,
+        exactPerimeter: Number((2 * Math.PI * 5).toFixed(2)),
+        pts: makeCircleContour(0.72, 0.72, 0, 0, 72),
+        areaFormula: 'A = πr² = π × 5² ≈ 78.54 cm²',
+        perimeterFormula: 'C = 2πr = 2 × π × 5 ≈ 31.42 cm',
+        perimeterKidNote: 'The outside edge of a circle is called its circumference (2πr ≈ 31.42 cm). Area is the flat space inside made of vertical slices (πr² ≈ 78.54 cm²).',
+        perimeterCalcNote: 'Circumference integrates boundary arc length C = ∮ r dθ = 2πr, while Area integrates vertical chord lengths 2√(r² − x²) across [-r, r] to get πr².',
+        formula: 'A = πr² = π × 5² ≈ 78.54 cm²',
+        visualFormula: 'Why π? Pie-slice strips of height r and half-rim width πr multiply to πr²!',
+        visualNote: 'Imagine slicing a round pizza into thin vertical strips or wedges: because the edge curves around by π ≈ 3.14, adding all the strips gives π times radius squared (πr²) rather than 2r × 2r!',
+        note: 'Vertical chords have height 2√(r² − x²). Integrating chord length across [-r, r] yields ∫_{-r}^{r} 2√(r² − x²) dx = πr² ≈ 78.54 cm².'
+      }),
+      buildPolygon2DShape({
+        id: '2d-eq-triangle',
+        name: 'Equilateral Triangle (Base 10 cm, Height 8.66 cm)',
+        shortName: 'Equilateral △',
+        category: 'regular',
+        physWidth: 10,
+        physHeight: 8.66,
+        exactArea: 0.5 * 10 * 8.66,
+        exactPerimeter: 30,
+        pts: eqTriPts,
+        areaFormula: 'A = ½ × base × height = ½ × 10 × 8.66 = 43.30 cm²',
+        perimeterFormula: 'P = 3s = 3 × 10 = 30 cm',
+        perimeterKidNote: 'Perimeter is the sum of all 3 sides around the triangle (10 + 10 + 10 = 30 cm). Area is the flat space inside built by strips growing taller toward the base.',
+        perimeterCalcNote: 'Perimeter sums the three boundary edges P = 3s = 30 cm, while Area integrates linearly growing vertical strip heights h(x) across the triangle width.',
+        formula: 'A = ½ × b × h ≈ 43.30 cm²',
+        visualFormula: 'Why ½? Strips start at a tiny point (0) and grow to full height, averaging half a rectangle!',
+        visualNote: 'Start at the sharp top point and slide vertical sticks across: because the sticks start at 0 and taper to a point, they cover half the space of a full box with the same base and height (½ × base × height)!',
+        note: 'Vertical strip height grows linearly from 0 at the apex to full height along the base, so ∫_0^h (b·u/h) du = ½bh.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-pentagon',
+        name: 'Regular Pentagon (Width 10 cm, Height 9.51 cm)',
+        shortName: 'Pentagon',
+        category: 'regular',
+        physWidth: 10,
+        physHeight: 9.51,
+        exactArea: 68.82,
+        exactPerimeter: 29.41,
+        pts: pentagonPts,
+        areaFormula: 'A = ½ × Perimeter × Apothem ≈ 68.82 cm²',
+        perimeterFormula: 'P = 5s ≈ 29.41 cm',
+        perimeterKidNote: 'Perimeter adds all 5 outside edges around the pentagon. Area adds all the vertical strips cutting through the inside.',
+        perimeterCalcNote: 'Perimeter sums all 5 equal boundary sides (P = 5s), while Area integrates vertical cross-section lengths ℓ(x) across the horizontal span.',
+        formula: 'A = ½ · P · a ≈ 68.82 cm²',
+        visualFormula: 'Pentagon Area = adding thin vertical strips across all 5 sides',
+        visualNote: 'Sweep thin vertical strips from the leftmost corner to the rightmost corner of the 5-sided pentagon. Adding the length of every strip gives the whole flat space inside.',
+        note: 'Even though angled pentagon edges change strip slope at vertices, summing ℓ(x) · dx across the full width equals the exact regular pentagon area.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-hexagon',
+        name: 'Regular Hexagon (Side 5 cm)',
+        shortName: 'Hexagon',
+        category: 'regular',
+        physWidth: 10,
+        physHeight: 8.66,
+        exactArea: ((3 * Math.sqrt(3)) / 2) * 25,
+        exactPerimeter: 30,
+        pts: hexagonPts,
+        areaFormula: 'A = (3√3 / 2)s² ≈ 64.95 cm²',
+        perimeterFormula: 'P = 6s = 6 × 5 = 30 cm',
+        perimeterKidNote: 'Perimeter walks all 6 equal sides around the outside (6 × 5 = 30 cm). Area adds up the vertical slices filling the hexagon inside.',
+        perimeterCalcNote: 'Perimeter equals 6s = 30 cm around the closed boundary; Area integrates piecewise vertical chords across the left slant, middle plateau, and right slant.',
+        formula: 'A = (3√3 / 2)s² ≈ 64.95 cm²',
+        visualFormula: 'Hexagon Area = honeycomb strips that grow, stay wide in the middle, then shrink',
+        visualNote: 'Like a honeycomb cell sliced into thin strips: strip lengths climb up the left slant, stay level across the middle, and taper down the right slant.',
+        note: 'A regular hexagon’s vertical cross-section rises linearly, plateaus across its flat top/bottom span, and tapers linearly to its right vertex.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-trapezoid',
+        name: 'Irregular Trapezoid',
+        shortName: 'Trapezoid',
+        category: 'irregular',
+        physWidth: 11,
+        physHeight: 8,
+        exactArea: 66.0,
+        exactPerimeter: 35.4,
+        pts: trapezoidPts,
+        areaFormula: 'A = ½(b₁ + b₂)h = 66.00 cm²',
+        perimeterFormula: 'P = b₁ + b₂ + side₁ + side₂ ≈ 35.40 cm',
+        perimeterKidNote: 'Perimeter is the sum of all 4 outer sides—top, bottom, and both slants. Area is the total flat space inside found by adding the vertical strips.',
+        perimeterCalcNote: 'Perimeter sums the four boundary line segments (P = ∑ Δs_i), while Area integrates vertical span ℓ(x) between the non-parallel slanted edges.',
+        formula: 'A = ½(b₁ + b₂)h = 66.00 cm²',
+        visualFormula: 'Trapezoid Area = adding slanted-edge strips from left to right',
+        visualNote: 'Because the top and bottom edges slant at different angles, each vertical strip has its own height. Adding all strips together gives the exact area.',
+        note: 'Linearly varying top and bottom boundaries mean strip length changes at a constant rate across the sweep.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-l-shape',
+        name: 'Compound L-Shape',
+        shortName: 'L-Shape',
+        category: 'irregular',
+        physWidth: 10,
+        physHeight: 10,
+        exactArea: 64.0,
+        exactPerimeter: 40.0,
+        pts: lShapePts,
+        areaFormula: 'A = A_left_tower + A_bottom_foot = 64.00 cm²',
+        perimeterFormula: 'P = sum of all 6 outer edges = 40.00 cm',
+        perimeterKidNote: 'Walk all 6 outside edges around the L to get its Perimeter (40 cm)—even the inner corner counts! Area measures the flat inside space (64 cm²).',
+        perimeterCalcNote: 'Perimeter sums all 6 exterior segments around the non-convex L boundary; Area integrates tall left strips plus shorter right foot strips.',
+        formula: 'A = A₁ + A₂ = 64.00 cm²',
+        visualFormula: 'L-Shape Area = tall strips on the left leg + shorter foot strips on the right',
+        visualNote: 'On the left side, vertical strips are tall because they cover the whole L. Past the corner bend, strips become shorter because only the bottom foot sticks out!',
+        note: 'A step in the upper boundary creates a kink in ℓ(x) while keeping the accumulation integral continuous.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-arrow',
+        name: 'Block Arrow Polygon',
+        shortName: 'Block Arrow',
+        category: 'irregular',
+        physWidth: 11,
+        physHeight: 8,
+        exactArea: 52.0,
+        exactPerimeter: 38.6,
+        pts: arrowPts,
+        areaFormula: 'A = A_shaft + A_arrowhead = 52.00 cm²',
+        perimeterFormula: 'P = sum of all 7 outer edges ≈ 38.60 cm',
+        perimeterKidNote: 'Perimeter traces all 7 outside sides around the tail, notches, and arrowhead tip. Area adds the vertical strips filling the arrow.',
+        perimeterCalcNote: 'Perimeter sums all 7 boundary segments of the arrow polygon; Area integrates constant shaft height followed by linear arrowhead taper.',
+        formula: 'A = A_shaft + A_head = 52.00 cm²',
+        visualFormula: 'Arrow Area = steady shaft strips followed by a pointed arrowhead',
+        visualNote: 'First you sweep steady strips along the arrow’s tail, then suddenly the arrowhead flares wider before tapering to a point. Adding every strip gives the arrow’s area.',
+        note: 'Piecewise-constant shaft height transitions abruptly into a linearly tapering arrowhead span.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-star',
+        name: '5-Pointed Star',
+        shortName: '5-Point Star',
+        category: 'irregular',
+        physWidth: 10,
+        physHeight: 9.5,
+        exactArea: 42.5,
+        exactPerimeter: 44.8,
+        pts: starPts,
+        areaFormula: 'A = ∑ A_triangles ≈ 42.50 cm²',
+        perimeterFormula: 'P = sum of all 10 star boundary edges ≈ 44.80 cm',
+        perimeterKidNote: 'Perimeter goes in and out along all 10 points and notches of the star—making a star have a longer outside edge than a smooth circle of similar width! Area counts the space inside.',
+        perimeterCalcNote: 'Perimeter sums all 10 alternating outer/inner star segments; Area integrates multi-peaked vertical cross-sections ℓ(x) across the star.',
+        formula: 'A = ∑ A_part ≈ 42.50 cm²',
+        visualFormula: 'Star Area = strips jumping taller at points and dipping in the notches',
+        visualNote: 'As you sweep across a star, strips shoot up when crossing a pointed tip and dip shorter when crossing a V-notch between points. Adding all strips gives the star’s area.',
+        note: 'Non-convex star notches create multiple local maxima and minima in vertical slice height ℓ(x) across a single horizontal sweep.'
+      }),
+      buildPolygon2DShape({
+        id: '2d-irregular-poly',
+        name: 'Irregular 6-Sided Polygon',
+        shortName: 'Irregular 6-Gon',
+        category: 'irregular',
+        physWidth: 10,
+        physHeight: 8.5,
+        exactArea: 58.4,
+        exactPerimeter: 36.2,
+        pts: customPolyPts,
+        areaFormula: 'A = ∫ (y_top(x) − y_bot(x)) dx ≈ 58.40 cm²',
+        perimeterFormula: 'P = s₁ + s₂ + s₃ + s₄ + s₅ + s₆ ≈ 36.20 cm',
+        perimeterKidNote: 'Even when a 6-sided shape is lopsided, its Perimeter is simply adding the length of all 6 outer edges, while its Area is adding all the vertical slices inside.',
+        perimeterCalcNote: 'Perimeter sums the 6 uneven outer edge lengths, while Area integrates the vertical gap y_top(x) − y_bot(x) from x_min to x_max.',
+        formula: 'A = ∫ (y_top − y_bot) dx ≈ 58.40 cm²',
+        visualFormula: 'Lopsided Polygon Area = adding uneven vertical slices from left edge to right edge',
+        visualNote: 'Even with six uneven sides and no symmetry, slicing the shape into thin vertical strips and adding their lengths gives the exact area inside.',
+        note: 'Arbitrary polygon vertices produce piecewise-linear upper and lower envelopes y_top(x) and y_bot(x) whose difference integrates to exact polygon area.'
+      })
+    ];
+
+    const SHAPES_3D = [
+      {
+        id: '3d-cube',
+        name: 'Cube (8 × 8 × 8 cm)',
+        shortName: 'Cube',
+        category: 'regular',
+        heightCm: 8,
+        exactVolume: 512,
+        formula: 'Volume = s³ = 8³ = 512 cm³ | Surface Area = 6s² = 384 cm²',
+        visualFormula: 'Inside: 8×8 square slices stacked 8 cm high | Outside: 6 equal 8×8 squares',
+        visualNote: 'Inside Space: Stack flat 8×8 cm squares on top of one another up to 8 cm high. Outside Cover: Every one of the 6 outer faces is an 8×8 cm square (6 × 64 = 384 cm²).',
+        note: 'Constant square cross-section A(z) = 64 cm² over height 8 cm gives Volume = ∫_0^8 64 dz = 512 cm³; all 6 congruent square faces give Surface Area = 6 × 64 = 384 cm².',
+        outerSurfaces: [
+          { name: 'Bottom Square Face', area: 64, kind: 'base' },
+          { name: 'Top Square Face', area: 64, kind: 'cap' },
+          { name: 'Front Square Face', area: 64, kind: 'wall' },
+          { name: 'Back Square Face', area: 64, kind: 'wall' },
+          { name: 'Left Square Face', area: 64, kind: 'wall' },
+          { name: 'Right Square Face', area: 64, kind: 'wall' }
+        ],
+        sliceAt(u) {
+          return { type: 'rect', w: 0.92, d: 0.92, areaCm2: 64 };
+        }
+      },
+      {
+        id: '3d-cuboid',
+        name: 'Cuboid / Rectangular Box (12 × 6 × 5 cm)',
+        shortName: 'Cuboid',
+        category: 'regular',
+        heightCm: 5,
+        exactVolume: 360,
+        formula: 'Volume = l·w·h = 12×6×5 = 360 cm³ | Surface Area = 2(lw + lh + wh) = 324 cm²',
+        visualFormula: 'Inside: 12×6 rectangles stacked 5 cm high | Outside: 3 pairs of rectangular faces',
+        visualNote: 'Inside Space: Stack 12×6 cm rectangles up to 5 cm tall. Outside Cover: Add up the top, bottom, and four side rectangles (324 cm² in total).',
+        note: 'Constant 12×6 cm rectangle cross-section across 5 cm height yields Volume = 360 cm³; opposite pairs of rectangular faces give Surface Area = 2(72 + 60 + 30) = 324 cm².',
+        outerSurfaces: [
+          { name: 'Bottom Face (12 × 6 cm)', area: 72, kind: 'base' },
+          { name: 'Top Face (12 × 6 cm)', area: 72, kind: 'cap' },
+          { name: 'Front & Back Faces (2 × 12×5 cm)', area: 120, kind: 'wall' },
+          { name: 'Left & Right Faces (2 × 6×5 cm)', area: 60, kind: 'wall' }
+        ],
+        sliceAt(u) {
+          return { type: 'rect', w: 1.18, d: 0.72, areaCm2: 72 };
+        }
+      },
+      {
+        id: '3d-cylinder',
+        name: 'Cylinder (r = 4 cm, h = 10 cm)',
+        shortName: 'Cylinder',
+        category: 'regular',
+        heightCm: 10,
+        exactVolume: Number((Math.PI * 16 * 10).toFixed(2)),
+        formula: 'Volume = πr²h ≈ 502.65 cm³ | Surface Area = 2πr² + 2πrh ≈ 351.86 cm²',
+        visualFormula: 'Why π? Each coin slice has circle area πr² stacked h tall; unrolling the wall gives 2πrh!',
+        visualNote: 'Inside Space: Stack round coins of area πr² up to 10 cm tall. Outside Cover: Add the round bottom (πr²), round top (πr²), and unroll the curved side wrapper into a rectangle of width 2πr and height h!',
+        note: 'Circular slices of constant area A(z) = πr² stacked over h = 10 cm give Volume = ∫_0^h πr² dz = πr²h; two circular ends plus curved lateral sheet 2πrh give total outer surface area.',
+        outerSurfaces: [
+          { name: 'Bottom Circle (πr²)', area: Number((Math.PI * 16).toFixed(2)), kind: 'base' },
+          { name: 'Top Circle (πr²)', area: Number((Math.PI * 16).toFixed(2)), kind: 'cap' },
+          { name: 'Curved Side Wall (2πrh)', area: Number((2 * Math.PI * 4 * 10).toFixed(2)), kind: 'wall' }
+        ],
+        sliceAt(u) {
+          return { type: 'circle', rx: 0.72, rz: 0.72, areaCm2: Number((Math.PI * 16).toFixed(2)) };
+        }
+      },
+      {
+        id: '3d-sphere',
+        name: 'Sphere (Radius 6 cm)',
+        shortName: 'Sphere',
+        category: 'regular',
+        heightCm: 12,
+        exactVolume: Number(((4 / 3) * Math.PI * 216).toFixed(2)),
+        formula: 'Volume = (4/3)πr³ ≈ 904.78 cm³ | Surface Area = 4πr² ≈ 452.39 cm²',
+        visualFormula: 'Why 4/3 and π? Tapering top & bottom circles keep 2/3 of a 2πr³ cylinder = (4/3)πr³!',
+        visualNote: 'Inside Space: A cylinder of radius r and height 2r has volume 2πr³. Because a ball tapers at both the top and bottom to small circles, it keeps 2/3 of that cylinder: (2/3) × 2πr³ = (4/3)πr³! Outside Cover: All 4 circle-sized patches (4πr²) wrap the ball.',
+        note: 'Horizontal circular slices have area A(z) = π(r² − z²) for z ∈ [-r, r]. Integrating Volume = ∫_{-r}^{r} π(r² − z²) dz = π[r²z − z³/3]_{-r}^{r} = (4/3)πr³ ≈ 904.78 cm³, and d(Volume)/dr = 4πr².',
+        outerSurfaces: [
+          { name: 'Full Spherical Outer Skin (4πr²)', area: Number((4 * Math.PI * 36).toFixed(2)), kind: 'wall' }
+        ],
+        sliceAt(u) {
+          const yNorm = 2 * u - 1;
+          const radScale = Math.sqrt(Math.max(0.0004, 1 - yNorm * yNorm));
+          const areaCm2 = Math.PI * 36 * radScale * radScale;
+          return {
+            type: 'circle',
+            rx: 0.76 * radScale,
+            rz: 0.76 * radScale,
+            areaCm2: Number(areaCm2.toFixed(2))
+          };
+        }
+      },
+      {
+        id: '3d-cone',
+        name: 'Right Circular Cone (r = 5 cm, h = 9 cm)',
+        shortName: 'Cone',
+        category: 'regular',
+        heightCm: 9,
+        exactVolume: Number(((1 / 3) * Math.PI * 25 * 9).toFixed(2)),
+        formula: 'Volume = (1/3)πr²h ≈ 235.62 cm³ | Surface Area = πr² + πrs ≈ 219.91 cm²',
+        visualFormula: 'Why 1/3 and π? Circles start at πr² and shrink to a tip, taking 1/3 of a πr²h cylinder!',
+        visualNote: 'Inside Space: Stack round slices that shrink down to a single tip at the top. Because the slices get smaller as they climb, 3 cones of the same base and height fill 1 cylinder—so a cone is 1/3 of πr²h! Outside Cover: Base circle (πr²) + slanted cone wrapper (πrs).',
+        note: 'Circular slice radius scales linearly as (1 − z/h), giving A(z) = πr²(1 − z/h)². Integrating ∫_0^h A(z) dz yields (1/3)πr²h ≈ 235.62 cm³.',
+        outerSurfaces: [
+          { name: 'Circular Base (πr²)', area: Number((Math.PI * 25).toFixed(2)), kind: 'base' },
+          { name: 'Slanted Cone Surface (πrs)', area: Number((Math.PI * 5 * Math.hypot(5, 9)).toFixed(2)), kind: 'wall' }
+        ],
+        sliceAt(u) {
+          const s = Math.max(0.015, 1 - u);
+          return {
+            type: 'circle',
+            rx: 0.76 * s,
+            rz: 0.76 * s,
+            areaCm2: Number((Math.PI * 25 * s * s).toFixed(2))
+          };
+        }
+      },
+      {
+        id: '3d-hex-prism',
+        name: 'Hexagonal Prism (Side 4 cm, Height 8 cm)',
+        shortName: 'Hex Prism',
+        category: 'regular',
+        heightCm: 8,
+        exactVolume: Number((((3 * Math.sqrt(3)) / 2) * 16 * 8).toFixed(2)),
+        formula: 'Volume = A_hex × h ≈ 332.55 cm³ | Surface Area = 2A_hex + 6sh ≈ 324.28 cm²',
+        visualFormula: 'Inside: honeycomb hexagons stacked up | Outside: 2 hexagons + 6 rectangular side walls',
+        visualNote: 'Inside Space: Stack flat 6-sided hexagons 8 cm high. Outside Cover: Add the bottom hexagon, top hexagon, and all 6 side rectangles.',
+        note: 'Constant regular hexagon cross-section A_hex = (3√3/2)s² over height 8 cm gives Volume ≈ 332.55 cm³; two hexagonal ends plus six 4×8 cm rectangular sides give Surface Area ≈ 324.28 cm².',
+        outerSurfaces: [
+          { name: 'Bottom Hexagon Face', area: Number((((3 * Math.sqrt(3)) / 2) * 16).toFixed(2)), kind: 'base' },
+          { name: 'Top Hexagon Face', area: Number((((3 * Math.sqrt(3)) / 2) * 16).toFixed(2)), kind: 'cap' },
+          { name: 'Six Rectangular Side Faces (6 × 4×8)', area: 192, kind: 'wall' }
+        ],
+        sliceAt(u) {
+          return {
+            type: 'poly',
+            pts: makeRegularPolygon(6, 0.82, 0, 1, 0.76),
+            areaCm2: Number((((3 * Math.sqrt(3)) / 2) * 16).toFixed(2))
+          };
+        }
+      },
+      {
+        id: '3d-square-pyramid',
+        name: 'Square Pyramid (Base 8 × 8 cm, Height 9 cm)',
+        shortName: 'Square Pyramid',
+        category: 'irregular',
+        heightCm: 9,
+        exactVolume: 192,
+        formula: 'Volume = (1/3) × base × height = 192 cm³ | Surface Area = b² + 2·b·slant ≈ 225.75 cm²',
+        visualFormula: 'Why 1/3? Squares shrink down to a single apex point, taking 1/3 of a same-base box!',
+        visualNote: 'Inside Space: Stack squares that shrink steadily as they rise to one top point. Because the layers narrow to a tip, it equals 1/3 of a box with the same square base and height! Outside Cover: 1 square base + 4 triangle sides.',
+        note: 'Square cross-section side length scales linearly as (1 − z/h), so A(z) = b²(1 − z/h)², integrating to Volume = ∫_0^h b²(1 − z/h)² dz = (1/3)b²h = 192 cm³.',
+        outerSurfaces: [
+          { name: 'Square Base (8 × 8 cm)', area: 64, kind: 'base' },
+          { name: 'Four Triangular Sides (4 × ½·8·slant)', area: Number((4 * 0.5 * 8 * Math.hypot(4, 9)).toFixed(2)), kind: 'wall' }
+        ],
+        sliceAt(u) {
+          const s = Math.max(0.02, 1 - u);
+          return {
+            type: 'rect',
+            w: 0.96 * s,
+            d: 0.76 * s,
+            areaCm2: Number((64 * s * s).toFixed(2))
+          };
+        }
+      },
+      {
+        id: '3d-frustum',
+        name: 'Truncated Cone / Frustum (r₁=6, r₂=3, h=8 cm)',
+        shortName: 'Cone Frustum',
+        category: 'irregular',
+        heightCm: 8,
+        exactVolume: Number(((Math.PI * 8 / 3) * (36 + 18 + 9)).toFixed(2)),
+        formula: 'Volume = (πh/3)(r₁² + r₁r₂ + r₂²) ≈ 527.79 cm³',
+        visualFormula: 'Why π and 1/3? Tapering circular slices blend r₁² and r₂² over height h with factor π/3!',
+        visualNote: 'Inside Space: Like a flower pot—circles start wide (r₁) at the bottom and shrink smoothly to a smaller circle (r₂) at the top. Adding all those shrinking circles gives (πh/3)(r₁² + r₁r₂ + r₂²)! Outside Cover: Bottom circle + top circle + slanted band.',
+        note: 'Linear radius r(z) = r₁ + (r₂ − r₁)(z/h) gives A(z) = π·r(z)². Integrating from z = 0 to h yields Volume = (πh/3)(r₁² + r₁r₂ + r₂²) ≈ 527.79 cm³.',
+        outerSurfaces: [
+          { name: 'Larger Bottom Circle (π·6²)', area: Number((Math.PI * 36).toFixed(2)), kind: 'base' },
+          { name: 'Smaller Top Circle (π·3²)', area: Number((Math.PI * 9).toFixed(2)), kind: 'cap' },
+          { name: 'Slanted Side Band (π(r₁+r₂)·slant)', area: Number((Math.PI * 9 * Math.hypot(3, 8)).toFixed(2)), kind: 'wall' }
+        ],
+        sliceAt(u) {
+          const scale = 1 - 0.5 * u;
+          const rPhys = 6 - 3 * u;
+          return {
+            type: 'circle',
+            rx: 0.78 * scale,
+            rz: 0.78 * scale,
+            areaCm2: Number((Math.PI * rPhys * rPhys).toFixed(2))
+          };
+        }
+      },
+      {
+        id: '3d-wedge-prism',
+        name: 'Triangular Prism / Tent Solid (b=8, h_tri=6, L=10 cm)',
+        shortName: 'Triangular Prism',
+        category: 'irregular',
+        heightCm: 10,
+        exactVolume: 240,
+        formula: 'Volume = A_triangle × length = 24 × 10 = 240 cm³',
+        visualFormula: 'Inside: triangle slices stacked along the tent length | Outside: 2 triangles + 3 rectangles',
+        visualNote: 'Inside Space: Stack identical triangle slices along the length of a tent. Outside Cover: Both end triangles plus all 3 rectangular faces around the outside.',
+        note: 'Constant triangular cross-section of area ½ × 8 × 6 = 24 cm² swept across 10 cm gives Volume = 240 cm³; two end triangles plus three rectangular sides give total surface area.',
+        outerSurfaces: [
+          { name: 'Front & Back Triangle Ends (2 × 24 cm²)', area: 48, kind: 'base' },
+          { name: 'Bottom Rectangle (8 × 10 cm)', area: 80, kind: 'wall' },
+          { name: 'Two Slanted Roof Rectangles (2 × 5×10 cm)', area: 100, kind: 'wall' }
+        ],
+        sliceAt(u) {
+          const triPts = [
+            { x: -0.82, y: -0.58 },
+            { x: 0.82, y: -0.58 },
+            { x: 0.0, y: 0.64 }
+          ];
+          return { type: 'poly', pts: triPts, areaCm2: 24 };
+        }
+      },
+      {
+        id: '3d-stepped-tower',
+        name: 'Stepped Two-Tier Block',
+        shortName: 'Stepped Block',
+        category: 'irregular',
+        heightCm: 10,
+        exactVolume: 420,
+        formula: 'Volume = Volume_lower_tier + Volume_upper_tier = 288 + 132 = 420 cm³',
+        visualFormula: 'Inside: wide bottom blocks + narrower top blocks | Outside: all visible outer faces summed',
+        visualNote: 'Inside Space: Stack wide slices on the bottom half, then switch to narrower slices on the top half—a step jump shows up right at the tier change! Outside Cover: Sum every exposed outer face.',
+        note: 'A discontinuous jump in cross-sectional area at u = 0.6 creates a step in the volume accumulation curve while keeping Volume(z) continuous.',
+        outerSurfaces: [
+          { name: 'Bottom Base Face', area: 72, kind: 'base' },
+          { name: 'Lower Tier Side Walls', area: 144, kind: 'wall' },
+          { name: 'Step Ledge Rim', area: 38, kind: 'cap' },
+          { name: 'Upper Tier Side Walls & Top Cap', area: 166, kind: 'wall' }
+        ],
+        sliceAt(u) {
+          if (u < 0.6) {
+            return { type: 'rect', w: 1.06, d: 0.76, areaCm2: 48 };
+          } else {
+            return { type: 'rect', w: 0.68, d: 0.56, areaCm2: 33 };
+          }
+        }
+      }
+    ];
+
+    const state = {
+      dim: '1d',
+      selectedId: {
+        '1d': SHAPES_1D[0].id,
+        '2d': SHAPES_2D[0].id,
+        '3d': SHAPES_3D[0].id
+      },
+      sweep: 0.45,
+      density: {
+        '1d': 36,
+        '2d': 36,
+        '3d': 28
+      },
+      transform: {
+        '2d': { angleDeg: 0, dx: 0, dy: 0 },
+        '3d': { angleDeg: 0, dx: 0, dy: 0 }
+      },
+      dragMode: 'sweep',
+      show2dPerimeter: true,
+      focus3d: 'volume',
+      intuitionLevel: 'kids',
+      showConstantsGuide: true,
+      playing: false,
+      isScrubbing: false,
+      lastPointer: null
+    };
+
+    const dom = {
+      dimBtn1d: document.getElementById('dim-btn-1d'),
+      dimBtn2d: document.getElementById('dim-btn-2d'),
+      dimBtn3d: document.getElementById('dim-btn-3d'),
+      modeSummaryPill: document.getElementById('mode-summary-pill'),
+      shapeCountBadge: document.getElementById('shape-count-badge'),
+      regularShapesList: document.getElementById('regular-shapes-list'),
+      irregularShapesList: document.getElementById('irregular-shapes-list'),
+      playToggleBtn: document.getElementById('play-toggle-btn'),
+      resetBtn: document.getElementById('reset-btn'),
+      sweepLabel: document.getElementById('sweep-label'),
+      sweepSlider: document.getElementById('sweep-slider'),
+      sweepPercent: document.getElementById('sweep-percent'),
+      densityLabel: document.getElementById('density-label'),
+      densitySlider: document.getElementById('density-slider'),
+      densityValue: document.getElementById('density-value'),
+      densityHelper: document.getElementById('density-helper'),
+      mode2dPanel: document.getElementById('mode-2d-panel'),
+      toggle2dPerimeterBtn: document.getElementById('toggle-2d-perimeter-btn'),
+      areaFormulaDisplay: document.getElementById('area-formula-display'),
+      perimeter2dReadout: document.getElementById('perimeter-2d-readout'),
+      perimeterFormulaDisplay: document.getElementById('perimeter-formula-display'),
+      perimeterTotalDisplay: document.getElementById('perimeter-total-display'),
+      perimeterSweptDisplay: document.getElementById('perimeter-swept-display'),
+      perimeterCalcSteps: document.getElementById('perimeter-calc-steps'),
+      perimeterExplanationNote: document.getElementById('perimeter-explanation-note'),
+      mode3dToggleWrap: document.getElementById('mode-3d-toggle-wrap'),
+      mode3dVolumeBtn: document.getElementById('mode-3d-volume-btn'),
+      mode3dSurfaceBtn: document.getElementById('mode-3d-surface-btn'),
+      activeShapeTitle: document.getElementById('active-shape-title'),
+      activeShapeSubtitle: document.getElementById('active-shape-subtitle'),
+      canvasLegend: document.getElementById('canvas-legend'),
+      canvasWrapper: document.getElementById('canvas-wrapper'),
+      canvas: document.getElementById('lab-canvas'),
+      canvasHint: document.getElementById('canvas-hint'),
+      shapeFormulaBadge: document.getElementById('shape-formula-badge'),
+      transformControlsPanel: document.getElementById('transform-controls-panel'),
+      dragModeSweepBtn: document.getElementById('drag-mode-sweep-btn'),
+      dragModeTurnBtn: document.getElementById('drag-mode-turn-btn'),
+      dragModeMoveBtn: document.getElementById('drag-mode-move-btn'),
+      resetTransformBtn: document.getElementById('reset-transform-btn'),
+      turnSlider: document.getElementById('turn-slider'),
+      turnValue: document.getElementById('turn-value'),
+      moveXSlider: document.getElementById('move-x-slider'),
+      moveXValue: document.getElementById('move-x-value'),
+      moveYSlider: document.getElementById('move-y-slider'),
+      moveYValue: document.getElementById('move-y-value'),
+      metricsGrid: document.getElementById('metrics-grid'),
+      panel3dSurface: document.getElementById('panel-3d-surface'),
+      surfaceTotalBadge: document.getElementById('surface-total-badge'),
+      surfaceFacesList: document.getElementById('surface-faces-list'),
+      levelKidsBtn: document.getElementById('level-kids-btn'),
+      levelCalcBtn: document.getElementById('level-calc-btn'),
+      intuitionPrimaryNote: document.getElementById('intuition-primary-note'),
+      intuitionDetails: document.getElementById('intuition-details'),
+      specialConstantsSection: document.getElementById('special-constants-section'),
+      toggleSpecialConstantsBtn: document.getElementById('toggle-special-constants-btn'),
+      specialConstantsGuide: document.getElementById('special-constants-guide'),
+      guideCardPi: document.getElementById('guide-card-pi'),
+      guideCardThird: document.getElementById('guide-card-third'),
+      guideCardFourThirds: document.getElementById('guide-card-four-thirds'),
+      guidePiText: document.getElementById('guide-pi-text'),
+      guideThirdText: document.getElementById('guide-third-text'),
+      guideFourThirdsText: document.getElementById('guide-four-thirds-text')
+    };
+
+    const ctx = dom.canvas.getContext('2d');
+
+    function getVariablesForShape(shape) {
+      const varMap = {
+        '1d-line': ['x = position along the straight line (0 to 12 cm)'],
+        '1d-circle-arc': ['r = radius (distance from center to rim, 5 cm)', 'θ = angle turned around the center', 'π ≈ 3.1416 = rim-to-diameter ratio'],
+        '1d-semicircle': ['r = radius of the half-circle (6 cm)', 'θ = angle sweeping across the half-circle', 'π ≈ 3.1416'],
+        '1d-square-rim': ['s = side length of one straight edge (5 cm)'],
+        '1d-sine-wave': ['x = horizontal position', 'y = wave height at position x'],
+        '1d-zigzag': ['Δx, Δy = horizontal and vertical step changes along each straight leg'],
+        '1d-spiral': ['r(θ) = distance from center at turn angle θ', 'θ = angle turned around the center'],
+        '1d-l-path': ['L_horizontal = length of the bottom horizontal leg', 'L_vertical = length of the upright vertical leg'],
+        '1d-cubic-bend': ['x = horizontal position', 'f′(x) = steepness (slope) of the S-bend at x'],
+        '1d-broken-fence': ['Δs_i = length of the i-th straight ridge segment'],
+        '2d-square': ['s = side length of each equal square side (10 cm)'],
+        '2d-rectangle': ['l (or length) = longer side (12 cm)', 'w (or width) = shorter side (6 cm)'],
+        '2d-disk': ['r = radius from center to outer edge (5 cm)', 'π ≈ 3.1416'],
+        '2d-eq-triangle': ['b (or base) = bottom side length (10 cm)', 'h (or height) = straight-up vertical height from base to tip (8.66 cm)', 's = side length (10 cm)'],
+        '2d-pentagon': ['P = perimeter (sum of all 5 sides)', 'a = apothem (straight distance from center perpendicular to a side)', 's = side length'],
+        '2d-hexagon': ['s = length of one side of the regular hexagon (5 cm)'],
+        '2d-trapezoid': ['b₁, b₂ = lengths of the two parallel bases', 'h = perpendicular height between the parallel bases'],
+        '2d-l-shape': ['A₁, A₂ = areas of the two rectangular parts making up the L'],
+        '2d-arrow': ['A_shaft = area of the rectangular tail', 'A_head = area of the pointed arrowhead'],
+        '2d-star': ['A_triangles = sum of triangle/wedge pieces forming the star'],
+        '2d-irregular-poly': ['y_top(x), y_bot(x) = top and bottom boundary heights at horizontal position x'],
+        '3d-cube': ['s = length of one equal edge of the cube (8 cm)'],
+        '3d-cuboid': ['l = length (12 cm)', 'w = width (6 cm)', 'h = height (5 cm)'],
+        '3d-cylinder': ['r = radius of the circular base/top (4 cm)', 'h = height of the cylinder from bottom to top (10 cm)', 'π ≈ 3.1416'],
+        '3d-sphere': ['r = radius from the center of the sphere to its outer surface (6 cm)', 'π ≈ 3.1416'],
+        '3d-cone': ['r = radius of the circular base (5 cm)', 'h = vertical height from base center to tip (9 cm)', 's = slant height (distance along the angled outside slope from rim to tip)', 'π ≈ 3.1416'],
+        '3d-hex-prism': ['A_hex = area of one hexagonal end face', 's = side length of the hexagon base (4 cm)', 'h = height/length along the prism (8 cm)'],
+        '3d-square-pyramid': ['b = base side length (8 cm)', 'h = vertical height from base center to top apex (9 cm)', 'slant = slant height along a triangular side face from base edge to apex'],
+        '3d-frustum': ['r₁ = larger bottom circle radius (6 cm)', 'r₂ = smaller top circle radius (3 cm)', 'h = vertical height between bottom and top circles (8 cm)', 'slant = slanted side distance from bottom rim to top rim', 'π ≈ 3.1416'],
+        '3d-wedge-prism': ['A_triangle = area of the triangular end face', 'b = base of triangle (8 cm)', 'h_tri = height of triangle (6 cm)', 'L = length along the prism (10 cm)'],
+        '3d-stepped-tower': ['Volume_lower_tier, Volume_upper_tier = volumes of the bottom and top tiers']
+      };
+      return varMap[shape.id] || ['Check each symbol in the formula for its measured dimension (length, radius, or height).'];
+    }
+
+    function renderVariableGlossaryHtml(shape) {
+      const vars = getVariablesForShape(shape);
+      const items = vars.map((v) => `<li><span class="font-mono text-slate-900">${v}</span></li>`).join('');
+      return `
+        <div class="pt-1.5 border-t border-slate-200/80">
+          <div class="font-semibold text-slate-800 mb-1">What the Letters / Symbols Mean:</div>
+          <ul class="list-disc pl-4 space-y-0.5 text-xs text-slate-700">${items}</ul>
+        </div>
+      `;
+    }
+
+    function getShapesForDim(dim) {
+      if (dim === '1d') return SHAPES_1D;
+      if (dim === '2d') return SHAPES_2D;
+      return SHAPES_3D;
+    }
+
+    function getActiveShape() {
+      const list = getShapesForDim(state.dim);
+      const found = list.find((s) => s.id === state.selectedId[state.dim]);
+      return found || list[0];
+    }
+
+    function sample1DPathPoints(shape, samples = 240) {
+      const pts = [];
+      let totalLen = 0;
+      for (let i = 0; i <= samples; i++) {
+        const t = i / samples;
+        const p = shape.samplePoint(t);
+        if (i > 0) {
+          totalLen += Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y);
+        }
+        pts.push({ ...p, t, cumNorm: 0 });
+      }
+      if (totalLen > 1e-9) {
+        let running = 0;
+        pts[0].cumNorm = 0;
+        for (let i = 1; i < pts.length; i++) {
+          running += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+          pts[i].cumNorm = running / totalLen;
+        }
+      }
+      return pts;
+    }
+
+    function computeAccumulation() {
+      const shape = getActiveShape();
+      const nSteps = state.density[state.dim];
+      const sweep = Math.max(0, Math.min(1, state.sweep));
+
+      if (state.dim === '1d') {
+        const fullLength = shape.exactLength;
+        const stepLength = fullLength / nSteps;
+        const exactFloatSteps = sweep * nSteps;
+        const fullCount = Math.floor(exactFloatSteps);
+        const partialFrac = Math.max(0, Math.min(1, exactFloatSteps - fullCount));
+        const activeSteps = fullCount + (partialFrac > 1e-4 ? 1 : 0);
+        const accumulatedLength = Math.min(fullLength, exactFloatSteps * stepLength);
+        const currentPoint = shape.samplePoint(sweep);
+
+        return {
+          shape,
+          nSteps,
+          activeSteps,
+          fullCount,
+          partialFrac,
+          stepLength,
+          accumulatedLength,
+          fullLength,
+          currentPoint
+        };
+      }
+
+      if (state.dim === '2d') {
+        const nStrips = nSteps;
+        const { minX, maxX, minY, maxY } = shape.bounds;
+        const normSpanX = Math.max(1e-6, maxX - minX);
+        const normSpanY = Math.max(1e-6, maxY - minY);
+        const physWidth = shape.physWidth;
+        const physHeight = shape.physHeight;
+        const dxPhys = physWidth / nStrips;
+        const dxNorm = normSpanX / nStrips;
+
+        const fullArea = shape.exactArea;
+        let rawTotalArea = 0;
+        const strips = [];
+
+        for (let i = 0; i < nStrips; i++) {
+          const x0Norm = minX + i * dxNorm;
+          const x1Norm = x0Norm + dxNorm;
+          const xMidNorm = 0.5 * (x0Norm + x1Norm);
+          const intervals = getPolygonVerticalIntervals(shape.pts, xMidNorm);
+
+          let normLenY = 0;
+          for (const [y0, y1] of intervals) {
+            normLenY += Math.max(0, y1 - y0);
+          }
+
+          const physStripLen = (normLenY / normSpanY) * physHeight;
+          const stripArea = physStripLen * dxPhys;
+          rawTotalArea += stripArea;
+
+          strips.push({
+            index: i,
+            x0Norm,
+            x1Norm,
+            xMidNorm,
+            intervals,
+            physStripLen,
+            stripArea
+          });
+        }
+
+        const areaScale = rawTotalArea > 1e-9 ? fullArea / rawTotalArea : 1;
+        const exactFloatStrips = sweep * nStrips;
+        const fullStripsCount = Math.floor(exactFloatStrips);
+        const partialFrac = Math.max(0, Math.min(1, exactFloatStrips - fullStripsCount));
+
+        let accumulatedArea = 0;
+        for (let i = 0; i < nStrips; i++) {
+          const s = strips[i];
+          const scaledArea = s.stripArea * areaScale;
+          if (i < fullStripsCount) {
+            accumulatedArea += scaledArea;
+          } else if (i === fullStripsCount && partialFrac > 0) {
+            accumulatedArea += scaledArea * partialFrac;
+          }
+        }
+
+        const sweepXNorm = minX + sweep * normSpanX;
+        const activeIntervals = getPolygonVerticalIntervals(shape.pts, sweepXNorm);
+        let activeNormLenY = 0;
+        for (const [y0, y1] of activeIntervals) {
+          activeNormLenY += Math.max(0, y1 - y0);
+        }
+        const currentStripLength = (activeNormLenY / normSpanY) * physHeight;
+        const activeCount = fullStripsCount + (partialFrac > 1e-4 ? 1 : 0);
+
+        return {
+          shape,
+          nStrips,
+          strips,
+          areaScale,
+          fullStripsCount,
+          partialFrac,
+          activeCount,
+          sweepXNorm,
+          activeIntervals,
+          currentStripLength,
+          accumulatedArea: Math.min(fullArea, accumulatedArea),
+          fullArea
+        };
+      }
+
+      const nSlices = nSteps;
+      const heightCm = shape.heightCm;
+      const dzCm = heightCm / nSlices;
+      const exactFloatSlices = sweep * nSlices;
+      const fullSlicesCount = Math.floor(exactFloatSlices);
+      const partialFrac = Math.max(0, Math.min(1, exactFloatSlices - fullSlicesCount));
+      const activeSlices = fullSlicesCount + (partialFrac > 1e-4 ? 1 : 0);
+
+      let rawVolSum = 0;
+      const sliceItems = [];
+      for (let i = 0; i < nSlices; i++) {
+        const uStart = i / nSlices;
+        const uEnd = (i + 1) / nSlices;
+        const uMid = 0.5 * (uStart + uEnd);
+        const info = shape.sliceAt(uMid);
+        const sliceVol = info.areaCm2 * dzCm;
+        rawVolSum += sliceVol;
+        sliceItems.push({
+          index: i,
+          uStart,
+          uEnd,
+          uMid,
+          info,
+          sliceVol
+        });
+      }
+
+      const volScale = rawVolSum > 1e-9 ? shape.exactVolume / rawVolSum : 1;
+      let accumulatedVolume = 0;
+      for (let i = 0; i < nSlices; i++) {
+        const item = sliceItems[i];
+        const v = item.sliceVol * volScale;
+        if (i < fullSlicesCount) {
+          accumulatedVolume += v;
+        } else if (i === fullSlicesCount && partialFrac > 0) {
+          accumulatedVolume += v * partialFrac;
+        }
+      }
+
+      const currentSliceInfo = shape.sliceAt(Math.min(1, Math.max(0, sweep)));
+      const totalSurfaceArea = shape.outerSurfaces.reduce((acc, f) => acc + f.area, 0);
+      const activeSurfaceCount = Math.round(sweep * shape.outerSurfaces.length);
+      const accumulatedSurfaceArea = totalSurfaceArea * sweep;
+
+      return {
+        shape,
+        nSlices,
+        sliceItems,
+        volScale,
+        fullSlicesCount,
+        partialFrac,
+        activeSlices,
+        currentSliceInfo,
+        accumulatedVolume: Math.min(shape.exactVolume, accumulatedVolume),
+        fullVolume: shape.exactVolume,
+        totalSurfaceArea,
+        accumulatedSurfaceArea,
+        activeSurfaceCount
+      };
+    }
+
+    function resizeCanvas() {
+      const rect = dom.canvasWrapper.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(240, Math.floor(rect.width));
+      const height = Math.max(220, Math.floor(rect.height));
+      dom.canvas.width = Math.floor(width * dpr);
+      dom.canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderCanvas();
+    }
+
+    function renderCanvas() {
+      const width = dom.canvas.width / Math.min(window.devicePixelRatio || 1, 2);
+      const height = dom.canvas.height / Math.min(window.devicePixelRatio || 1, 2);
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.save();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      const gridStep = 28;
+      for (let x = gridStep; x < width; x += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = gridStep; y < height; y += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const data = computeAccumulation();
+      if (state.dim === '1d') {
+        render1DCanvas(ctx, width, height, data);
+      } else if (state.dim === '2d') {
+        render2DCanvas(ctx, width, height, data);
+      } else {
+        render3DCanvas(ctx, width, height, data);
+      }
+    }
+
+    function render1DCanvas(ctx, width, height, data) {
+      const pad = 34;
+      const scaleX = (width - pad * 2) / 2;
+      const scaleY = (height - pad * 2) / 2;
+      const cx = width / 2;
+      const cy = height / 2;
+
+      const toScreen = (pt) => ({
+        x: cx + pt.x * scaleX,
+        y: cy - pt.y * scaleY
+      });
+
+      const sampled = sample1DPathPoints(data.shape, 240);
+
+      ctx.save();
+      ctx.beginPath();
+      sampled.forEach((p, idx) => {
+        const sp = toScreen(p);
+        if (idx === 0) ctx.moveTo(sp.x, sp.y);
+        else ctx.lineTo(sp.x, sp.y);
+      });
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([5, 5]);
+      ctx.stroke();
+      ctx.restore();
+
+      const nSteps = data.nSteps;
+      const stepPts = [];
+      for (let i = 0; i <= nSteps; i++) {
+        stepPts.push(toScreen(data.shape.samplePoint(i / nSteps)));
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      const maxIdx = Math.floor(state.sweep * (sampled.length - 1));
+      for (let i = 0; i <= maxIdx; i++) {
+        const sp = toScreen(sampled[i]);
+        if (i === 0) ctx.moveTo(sp.x, sp.y);
+        else ctx.lineTo(sp.x, sp.y);
+      }
+      if (maxIdx < sampled.length - 1) {
+        const pA = sampled[maxIdx];
+        const pB = sampled[maxIdx + 1];
+        const frac = state.sweep * (sampled.length - 1) - maxIdx;
+        const interp = toScreen({
+          x: pA.x + (pB.x - pA.x) * frac,
+          y: pA.y + (pB.y - pA.y) * frac
+        });
+        ctx.lineTo(interp.x, interp.y);
+      }
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+
+      for (let i = 0; i < stepPts.length; i++) {
+        const sp = stepPts[i];
+        const reached = i / nSteps <= state.sweep + 1e-6;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, reached ? 4.2 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = reached ? '#0f766e' : '#94a3b8';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const tip = toScreen(data.currentPoint);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, 7.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ea580c';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function render2DCanvas(ctx, width, height, data) {
+      const pad = 36;
+      const scale = Math.min(width - pad * 2, height - pad * 2) / 2;
+      const t2d = state.transform['2d'] || { angleDeg: 0, dx: 0, dy: 0 };
+      const rad = (t2d.angleDeg * Math.PI) / 180;
+      const cosA = Math.cos(rad);
+      const sinA = Math.sin(rad);
+      const cx = width / 2 + t2d.dx * scale * 0.45;
+      const cy = height / 2 - t2d.dy * scale * 0.45;
+
+      const transformPoint = (x, y) => ({
+        x: x * cosA - y * sinA,
+        y: x * sinA + y * cosA
+      });
+
+      const toScreen = (x, y) => {
+        const tp = transformPoint(x, y);
+        return {
+          x: cx + tp.x * scale,
+          y: cy - tp.y * scale
+        };
+      };
+
+      const transformedPts = data.shape.pts.map((pt) => transformPoint(pt.x, pt.y));
+
+      for (let i = 0; i < data.strips.length; i++) {
+        const s = data.strips[i];
+        if (i > data.fullStripsCount) break;
+        const isPartial = i === data.fullStripsCount;
+        const frac = isPartial ? data.partialFrac : 1;
+        if (frac <= 1e-4) continue;
+
+        const xLeft = toScreen(s.x0Norm, 0).x;
+        const xRight = toScreen(s.x0Norm + (s.x1Norm - s.x0Norm) * frac, 0).x;
+        const stripW = Math.max(0.8, xRight - xLeft);
+
+        for (const [y0, y1] of s.intervals) {
+          const topScreenY = toScreen(0, y1).y;
+          const botScreenY = toScreen(0, y0).y;
+          const stripH = Math.max(1, botScreenY - topScreenY);
+
+          ctx.save();
+          ctx.fillStyle = isPartial ? 'rgba(16, 185, 129, 0.22)' : 'rgba(16, 185, 129, 0.34)';
+          ctx.fillRect(xLeft, topScreenY, stripW, stripH);
+          ctx.strokeStyle = 'rgba(4, 120, 87, 0.45)';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(xLeft, topScreenY, stripW, stripH);
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      transformedPts.forEach((pt, idx) => {
+        const sp = {
+          x: cx + pt.x * scale,
+          y: cy - pt.y * scale
+        };
+        if (idx === 0) ctx.moveTo(sp.x, sp.y);
+        else ctx.lineTo(sp.x, sp.y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = state.show2dPerimeter ? '#0f766e' : '#0f172a';
+      ctx.lineWidth = state.show2dPerimeter ? 3 : 2.3;
+      ctx.stroke();
+
+      if (state.show2dPerimeter && state.sweep > 0) {
+        const screenPts = transformedPts.map((p) => ({
+          x: cx + p.x * scale,
+          y: cy - p.y * scale
+        }));
+        let totalPx = 0;
+        const segLens = [];
+        for (let i = 0; i < screenPts.length; i++) {
+          const a = screenPts[i];
+          const b = screenPts[(i + 1) % screenPts.length];
+          const d = Math.hypot(b.x - a.x, b.y - a.y);
+          segLens.push(d);
+          totalPx += d;
+        }
+        let rem = totalPx * state.sweep;
+        ctx.beginPath();
+        ctx.moveTo(screenPts[0].x, screenPts[0].y);
+        for (let i = 0; i < screenPts.length; i++) {
+          const a = screenPts[i];
+          const b = screenPts[(i + 1) % screenPts.length];
+          const d = segLens[i];
+          if (rem >= d) {
+            ctx.lineTo(b.x, b.y);
+            rem -= d;
+          } else {
+            const f = d > 1e-6 ? rem / d : 0;
+            ctx.lineTo(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+            break;
+          }
+        }
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const sweepScreenX = toScreen(data.sweepXNorm, 0).x;
+      for (const [y0, y1] of data.activeIntervals) {
+        const pTop = toScreen(data.sweepXNorm, y1);
+        const pBot = toScreen(data.sweepXNorm, y0);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pTop.x, pTop.y);
+        ctx.lineTo(pBot.x, pBot.y);
+        ctx.strokeStyle = '#047857';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(sweepScreenX, 18);
+      ctx.lineTo(sweepScreenX, height - 18);
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function project3D(x, y, z, centerX, centerY, unitPx, shapeId) {
+      const t3d = state.transform['3d'] || { angleDeg: 0, dx: 0, dy: 0 };
+      const rad = (t3d.angleDeg * Math.PI) / 180;
+      const cosR = Math.cos(rad);
+      const sinR = Math.sin(rad);
+
+      const rx = x * cosR - z * sinR + t3d.dx * 0.45;
+      const rz = x * sinR + z * cosR;
+      const ry = y + t3d.dy * 0.45;
+
+      const cos30 = 0.8660254;
+      const sin30 = 0.5;
+      const isoX = (rx - rz) * cos30;
+      const isoY = (rx + rz) * sin30 - ry;
+      return {
+        x: centerX + isoX * unitPx,
+        y: centerY + isoY * unitPx
+      };
+    }
+
+    function traceSlicePath(ctx, info, yNorm, centerX, centerY, unitPx, shapeId) {
+      if (info.type === 'circle') {
+        const steps = 64;
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const ang = (i / steps) * Math.PI * 2;
+          const px = info.rx * Math.cos(ang);
+          const pz = info.rz * Math.sin(ang);
+          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx, shapeId);
+          if (i === 0) ctx.moveTo(sp.x, sp.y);
+          else ctx.lineTo(sp.x, sp.y);
+        }
+        ctx.closePath();
+      } else if (info.type === 'rect') {
+        const hw = info.w * 0.5;
+        const hd = info.d * 0.5;
+        const corners = [
+          [-hw, -hd],
+          [hw, -hd],
+          [hw, hd],
+          [-hw, hd]
+        ];
+        ctx.beginPath();
+        corners.forEach(([px, pz], idx) => {
+          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx, shapeId);
+          if (idx === 0) ctx.moveTo(sp.x, sp.y);
+          else ctx.lineTo(sp.x, sp.y);
+        });
+        ctx.closePath();
+      } else if (info.type === 'poly') {
+        ctx.beginPath();
+        info.pts.forEach((pt, idx) => {
+          const sp = project3D(pt.x, yNorm, pt.y * 0.78, centerX, centerY, unitPx, shapeId);
+          if (idx === 0) ctx.moveTo(sp.x, sp.y);
+          else ctx.lineTo(sp.x, sp.y);
+        });
+        ctx.closePath();
+      }
+    }
+
+    function render3DCanvas(ctx, width, height, data) {
+      const unitPx = Math.min(width, height) * 0.34;
+      const centerX = width * 0.5;
+      const centerY = height * 0.62;
+      const totalHeightNorm = data.shape.id === '3d-cube' ? 0.92 : 1.05;
+      const yBottom = 0;
+
+      ctx.save();
+      const baseCorners = [
+        project3D(-0.95, yBottom, -0.95, centerX, centerY, unitPx, data.shape.id),
+        project3D(0.95, yBottom, -0.95, centerX, centerY, unitPx, data.shape.id),
+        project3D(0.95, yBottom, 0.95, centerX, centerY, unitPx, data.shape.id),
+        project3D(-0.95, yBottom, 0.95, centerX, centerY, unitPx, data.shape.id)
+      ];
+      ctx.beginPath();
+      baseCorners.forEach((p, idx) => {
+        if (idx === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.45)';
+      ctx.fill();
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+
+      const isSurfaceMode = state.focus3d === 'surface';
+
+      if (!isSurfaceMode) {
+        for (let i = 0; i < data.sliceItems.length; i++) {
+          const item = data.sliceItems[i];
+          if (i > data.fullSlicesCount) break;
+          const isPartial = i === data.fullSlicesCount;
+          const frac = isPartial ? data.partialFrac : 1;
+          if (frac <= 1e-4) continue;
+
+          const y0 = yBottom + item.uStart * totalHeightNorm;
+          const y1 = yBottom + (item.uStart + (item.uEnd - item.uStart) * frac) * totalHeightNorm;
+
+          ctx.save();
+          traceSlicePath(ctx, item.info, y0, centerX, centerY, unitPx, data.shape.id);
+          ctx.fillStyle = 'rgba(13, 148, 136, 0.24)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(15, 118, 110, 0.55)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          traceSlicePath(ctx, item.info, y1, centerX, centerY, unitPx, data.shape.id);
+          ctx.fillStyle = isPartial ? 'rgba(20, 184, 166, 0.32)' : 'rgba(13, 148, 136, 0.42)';
+          ctx.fill();
+          ctx.strokeStyle = '#0f766e';
+          ctx.lineWidth = 1.3;
+          ctx.stroke();
+          ctx.restore();
+        }
+      } else {
+        const wireframeSteps = 24;
+        for (let i = 0; i <= wireframeSteps; i++) {
+          const u = i / wireframeSteps;
+          const yN = yBottom + u * totalHeightNorm;
+          const info = data.shape.sliceAt(u);
+          const active = u <= state.sweep + 1e-5;
+
+          ctx.save();
+          traceSlicePath(ctx, info, yN, centerX, centerY, unitPx, data.shape.id);
+          if (active) {
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.14)';
+            ctx.fill();
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 1.6;
+          } else {
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+            ctx.lineWidth = 1;
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const botInfo = data.shape.sliceAt(0);
+        const topInfo = data.shape.sliceAt(1);
+        if (state.sweep > 0.02) {
+          ctx.save();
+          traceSlicePath(ctx, botInfo, yBottom, centerX, centerY, unitPx, data.shape.id);
+          ctx.fillStyle = 'rgba(217, 119, 6, 0.26)';
+          ctx.fill();
+          ctx.strokeStyle = '#b45309';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (state.sweep >= 0.98) {
+          ctx.save();
+          traceSlicePath(ctx, topInfo, yBottom + totalHeightNorm, centerX, centerY, unitPx, data.shape.id);
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.30)';
+          ctx.fill();
+          ctx.strokeStyle = '#b45309';
+          ctx.lineWidth = 2.2;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
+    function addMetricCard(label, value, valueClass = 'text-slate-900') {
+      const card = document.createElement('div');
+      card.className = 'bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-2xs space-y-1';
+      card.innerHTML = `
+        <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">${label}</div>
+        <div class="text-base sm:text-lg font-extrabold font-mono tabular-nums ${valueClass}">${value}</div>
+      `;
+      dom.metricsGrid.appendChild(card);
+    }
+
+    function renderShapeList() {
+      const shapes = getShapesForDim(state.dim);
+      const activeId = state.selectedId[state.dim];
+      dom.shapeCountBadge.textContent = `${shapes.length} shapes`;
+
+      dom.regularShapesList.innerHTML = '';
+      dom.irregularShapesList.innerHTML = '';
+
+      shapes.forEach((shape) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isSelected = shape.id === activeId;
+        btn.className = isSelected
+          ? 'w-full text-left px-3 py-2 rounded-xl text-xs font-semibold border transition bg-teal-50/90 text-teal-950 border-teal-400 shadow-2xs'
+          : 'w-full text-left px-3 py-2 rounded-xl text-xs font-medium border transition bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50';
+        btn.textContent = shape.shortName;
+        btn.addEventListener('click', () => {
+          state.selectedId[state.dim] = shape.id;
+          renderShapeList();
+          updateUI();
+        });
+
+        if (shape.category === 'regular') {
+          dom.regularShapesList.appendChild(btn);
+        } else {
+          dom.irregularShapesList.appendChild(btn);
+        }
+      });
+    }
+
+    function updateDimensionTabs() {
+      const tabs = [
+        { dim: '1d', el: dom.dimBtn1d },
+        { dim: '2d', el: dom.dimBtn2d },
+        { dim: '3d', el: dom.dimBtn3d }
+      ];
+      tabs.forEach(({ dim, el }) => {
+        const active = state.dim === dim;
+        el.className = active
+          ? 'dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs'
+          : 'dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900';
+      });
+    }
+
+    function updateUI() {
+      updateDimensionTabs();
+      const shape = getActiveShape();
+      const data = computeAccumulation();
+
+      dom.activeShapeTitle.textContent = shape.name;
+      dom.shapeFormulaBadge.textContent = shape.formula;
+
+      dom.sweepSlider.value = String(Math.round(state.sweep * 1000));
+      dom.sweepPercent.textContent = `${Math.round(state.sweep * 100)}%`;
+
+      dom.densitySlider.value = String(state.density[state.dim]);
+      dom.densityValue.textContent = String(state.density[state.dim]);
+
+      dom.playToggleBtn.textContent = state.playing ? 'Pause' : 'Play Sweep';
+
+      const formulaText = `${shape.formula || ''} ${shape.areaFormula || ''} ${shape.visualFormula || ''}`;
+      const showsPi = /π|pi/i.test(formulaText) || ['1d-circle-arc', '1d-semicircle', '2d-disk', '3d-cylinder', '3d-sphere', '3d-cone', '3d-frustum'].includes(shape.id);
+      const showsThird = /1\/3/.test(formulaText) || ['3d-cone', '3d-square-pyramid', '3d-frustum'].includes(shape.id);
+      const showsFourThirds = /4\/3/.test(formulaText) || shape.id === '3d-sphere';
+      const anySpecialConstantRelevant = showsPi || showsThird || showsFourThirds;
+
+      if (state.intuitionLevel === 'kids') {
+        dom.levelKidsBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs';
+        dom.levelCalcBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+      } else {
+        dom.levelCalcBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs';
+        dom.levelKidsBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+      }
+
+      dom.specialConstantsSection.classList.toggle('hidden', !anySpecialConstantRelevant);
+      dom.guideCardPi.classList.toggle('hidden', !showsPi);
+      dom.guideCardThird.classList.toggle('hidden', !showsThird);
+      dom.guideCardFourThirds.classList.toggle('hidden', !showsFourThirds);
+
+      dom.toggleSpecialConstantsBtn.textContent = state.showConstantsGuide ? 'Hide Guide' : 'Show Guide';
+      dom.specialConstantsGuide.classList.toggle('hidden', !state.showConstantsGuide);
+      if (state.intuitionLevel === 'kids') {
+        dom.guidePiText.textContent =
+          'Walking around a curved circle edge takes just over 3× (π ≈ 3.14) the straight trip across. Pie-wedge strips of height r and half-rim πr give circle area πr².';
+        dom.guideThirdText.textContent =
+          'A pointed cone or pyramid shrinks slices down to a single tip instead of staying full-width like a box or cylinder, taking only 1/3 as much volume (1/3 · base · height).';
+        dom.guideFourThirdsText.textContent =
+          'A sphere tapers at both top and bottom inside a height-2r cylinder (volume 2πr³), keeping 2/3 of that cylinder: (2/3) × 2πr³ = (4/3)πr³.';
+      } else {
+        dom.guidePiText.textContent =
+          'Circumference integrates C = ∫_0^{2π} r dθ = 2πr (defining π), and integrating vertical chords 2√(r² − x²) over [-r, r] yields Area = πr².';
+        dom.guideThirdText.textContent =
+          'Linear radius/side scaling gives quadratic cross-sectional area A(z) = A_base(1 − z/h)², and ∫_0^h A_base(1 − z/h)² dz = (1/3)A_base h.';
+        dom.guideFourThirdsText.textContent =
+          'Horizontal slices have area A(z) = π(r² − z²) for z ∈ [-r, r]; integrating Volume = ∫_{-r}^{r} π(r² − z²) dz gives (4/3)πr³ (with d(Volume)/dr = 4πr²).';
+      }
+
+      dom.metricsGrid.innerHTML = '';
+      dom.mode2dPanel.classList.add('hidden');
+      dom.perimeter2dReadout.classList.add('hidden');
+      dom.mode3dToggleWrap.classList.add('hidden');
+      dom.panel3dSurface.classList.add('hidden');
+
+      if (state.dim === '2d' || state.dim === '3d') {
+        dom.transformControlsPanel.classList.remove('hidden');
+        const tr = state.transform[state.dim] || { angleDeg: 0, dx: 0, dy: 0 };
+        dom.turnSlider.value = String(Math.round(tr.angleDeg));
+        dom.turnValue.textContent = `${Math.round(tr.angleDeg)}°`;
+        dom.moveXSlider.value = String(Math.round(tr.dx * 10));
+        dom.moveXValue.textContent = tr.dx.toFixed(1);
+        dom.moveYSlider.value = String(Math.round(tr.dy * 10));
+        dom.moveYValue.textContent = tr.dy.toFixed(1);
+
+        const activeBtnCls = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800';
+        const inactiveBtnCls = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50';
+        dom.dragModeSweepBtn.className = state.dragMode === 'sweep' ? activeBtnCls : inactiveBtnCls;
+        dom.dragModeTurnBtn.className = state.dragMode === 'turn' ? activeBtnCls : inactiveBtnCls;
+        dom.dragModeMoveBtn.className = state.dragMode === 'move' ? activeBtnCls : inactiveBtnCls;
+      } else {
+        dom.transformControlsPanel.classList.add('hidden');
+      }
+
+      if (state.dim === '1d') {
+        dom.modeSummaryPill.textContent = 'Points → Length';
+        dom.activeShapeSubtitle.textContent = 'Adding small steps along a path gives total length.';
+        dom.sweepLabel.textContent = 'Sweep Along Path';
+        dom.densityLabel.textContent = 'Number of Steps';
+        dom.densityHelper.textContent = 'More steps divide the path into shorter segments.';
+        dom.canvasHint.textContent = 'Drag across canvas or slider to walk along the path';
+        dom.canvasLegend.innerHTML = `
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-1 rounded bg-teal-700"></span>Added Length</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-600"></span>Current Position</span>
+        `;
+
+        addMetricCard('Steps Reached', `${data.activeSteps} / ${data.nSteps}`, 'text-slate-900');
+        addMetricCard('Each Step', `${data.stepLength.toFixed(2)} cm`, 'text-slate-800');
+        addMetricCard('Length So Far', `${data.accumulatedLength.toFixed(2)} cm`, 'text-teal-700');
+        addMetricCard('Total Length', `${data.fullLength.toFixed(2)} cm`, 'text-slate-900');
+
+        if (state.intuitionLevel === 'kids') {
+          dom.intuitionPrimaryNote.textContent = shape.visualNote;
+          const specialLine = anySpecialConstantRelevant
+            ? `<div><strong>Why Those Special Numbers Appear:</strong> <span class="font-mono text-teal-900">${shape.visualFormula}</span></div>`
+            : '';
+          dom.intuitionDetails.innerHTML = `
+            ${specialLine}
+            <div><strong>Big Idea:</strong> A line or curve is made of lots of tiny steps one after another. Adding their lengths together gives the total distance!</div>
+            ${renderVariableGlossaryHtml(shape)}
+          `;
+        } else {
+          dom.intuitionPrimaryNote.textContent = shape.note;
+          dom.intuitionDetails.innerHTML = `
+            <div><strong>Arc Length Formula:</strong> <span class="font-mono text-slate-900">${shape.formula}</span></div>
+            <div><strong>Calculus View:</strong> Each tiny step has arc element ds = √(dx² + dy²). Summing ∑ Δs_i as Δs → 0 gives the line integral ∫ ds (${data.accumulatedLength.toFixed(2)} / ${data.fullLength.toFixed(2)} cm).</div>
+            ${renderVariableGlossaryHtml(shape)}
+          `;
+        }
+      } else if (state.dim === '2d') {
+        dom.modeSummaryPill.textContent = 'Lengths → Area + Perimeter';
+        dom.activeShapeSubtitle.textContent = 'Adding thin length strips across a flat shape gives its area; adding outer edges gives its perimeter.';
+        dom.sweepLabel.textContent = 'Sweep Strips & Outer Rim';
+        dom.densityLabel.textContent = 'Number of Strips';
+        dom.densityHelper.textContent = 'More strips make thinner slices that fill the flat shape smoothly.';
+        dom.canvasHint.textContent = state.show2dPerimeter
+          ? 'Inside area strips (green) + outer perimeter rim (amber) update with sweep'
+          : 'Drag across canvas or slider to sweep strips across the shape';
+        dom.canvasLegend.innerHTML = state.show2dPerimeter
+          ? `
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-emerald-500/35 border border-emerald-600"></span>Added Area</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-1 rounded bg-amber-600"></span>Perimeter Rim</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-0.5 h-3.5 bg-orange-600"></span>Sweep Edge</span>
+          `
+          : `
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-emerald-500/35 border border-emerald-600"></span>Added Area</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-0.5 h-3.5 bg-emerald-700"></span>Strip Length</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-0.5 h-3.5 bg-orange-600"></span>Sweep Edge</span>
+          `;
+
+        dom.mode2dPanel.classList.remove('hidden');
+        dom.areaFormulaDisplay.textContent = shape.areaFormula || shape.formula;
+        dom.toggle2dPerimeterBtn.textContent = state.show2dPerimeter ? 'Highlight Rim: ON' : 'Highlight Rim: OFF';
+        dom.toggle2dPerimeterBtn.className = state.show2dPerimeter
+          ? 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-amber-600 text-white border-amber-700'
+          : 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-300 hover:bg-slate-50';
+
+        dom.perimeter2dReadout.classList.remove('hidden');
+        const totalPerim = shape.exactPerimeter || 0;
+        const sweptPerim = totalPerim * state.sweep;
+        dom.perimeterFormulaDisplay.textContent = shape.perimeterFormula || 'P = sum of outer edges';
+        dom.perimeterTotalDisplay.textContent = `${totalPerim.toFixed(2)} cm`;
+        dom.perimeterSweptDisplay.textContent = `${sweptPerim.toFixed(2)} / ${totalPerim.toFixed(2)} cm`;
+        dom.perimeterCalcSteps.textContent = `${shape.perimeterFormula} → ${totalPerim.toFixed(2)} cm total (traced ${sweptPerim.toFixed(2)} cm at ${Math.round(state.sweep * 100)}%)`;
+        dom.perimeterExplanationNote.textContent =
+          state.intuitionLevel === 'kids'
+            ? shape.perimeterKidNote
+            : shape.perimeterCalcNote;
+
+        addMetricCard('Strips Swept', `${data.activeCount} / ${data.nStrips}`, 'text-slate-900');
+        addMetricCard('Perimeter', `${totalPerim.toFixed(2)} cm`, 'text-amber-800');
+        addMetricCard('Area Added So Far', `${data.accumulatedArea.toFixed(2)} cm²`, 'text-emerald-700');
+        addMetricCard('Total Shape Area', `${data.fullArea.toFixed(2)} cm²`, 'text-slate-900');
+
+        if (state.intuitionLevel === 'kids') {
+          const perimLine = state.show2dPerimeter
+            ? `<div class="pt-1 border-t border-slate-200/80"><strong>Perimeter vs. Area:</strong> ${shape.perimeterKidNote}</div>`
+            : '';
+          const specialLine = anySpecialConstantRelevant
+            ? `<div><strong>Why Those Special Numbers Appear:</strong> <span class="font-mono text-emerald-900">${shape.visualFormula}</span></div>`
+            : '';
+          dom.intuitionPrimaryNote.textContent = shape.visualNote;
+          dom.intuitionDetails.innerHTML = `
+            ${specialLine}
+            <div><strong>Big Idea:</strong> Cover a flat shape with lots of thin strips side by side. Adding up the lengths of all those thin strips gives the flat area inside!</div>
+            ${perimLine}
+            ${renderVariableGlossaryHtml(shape)}
+          `;
+        } else {
+          const perimCalcLine = state.show2dPerimeter
+            ? `<div class="pt-1 border-t border-slate-200/80"><strong>Perimeter (${shape.perimeterFormula}):</strong> ${shape.perimeterCalcNote}</div>`
+            : '';
+          dom.intuitionPrimaryNote.textContent = shape.note;
+          dom.intuitionDetails.innerHTML = `
+            <div><strong>Area Formula (${shape.shortName}):</strong> <span class="font-mono text-slate-900">${shape.areaFormula || shape.formula}</span></div>
+            <div><strong>Calculus View:</strong> Each thin strip of length ℓ(x) and thickness dx contributes dA = ℓ(x) dx. Summing strips gives ∑ ℓ(x_i) Δx → ∫ ℓ(x) dx (${data.accumulatedArea.toFixed(2)} / ${data.fullArea.toFixed(2)} cm²).</div>
+            ${perimCalcLine}
+            ${renderVariableGlossaryHtml(shape)}
+          `;
+        }
+      } else {
+        dom.mode3dToggleWrap.classList.remove('hidden');
+        const isSurface = state.focus3d === 'surface';
+
+        if (!isSurface) {
+          dom.mode3dVolumeBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs';
+          dom.mode3dSurfaceBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+          dom.modeSummaryPill.textContent = 'Slices → Volume (Inside)';
+          dom.activeShapeSubtitle.textContent = 'Stacking flat cross-sectional slices from bottom to top builds inside volume.';
+          dom.sweepLabel.textContent = 'Stack Slices Bottom → Top';
+          dom.densityLabel.textContent = 'Number of Slices';
+          dom.densityHelper.textContent = 'More slices make thinner layers inside the 3D shape.';
+          dom.canvasHint.textContent = 'Drag across canvas or slider to stack inside slices';
+          dom.canvasLegend.innerHTML = `
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-teal-600/35 border border-teal-700"></span>Stacked Inside Slices</span>
+          `;
+
+          addMetricCard('Slices Stacked', `${data.activeSlices} / ${data.nSlices}`, 'text-slate-900');
+          addMetricCard('Current Slice Area', `${data.currentSliceInfo.areaCm2.toFixed(2)} cm²`, 'text-teal-700');
+          addMetricCard('Volume So Far', `${data.accumulatedVolume.toFixed(2)} cm³`, 'text-teal-700');
+          addMetricCard('Total Volume', `${data.fullVolume.toFixed(2)} cm³`, 'text-slate-900');
+
+          if (state.intuitionLevel === 'kids') {
+            dom.intuitionPrimaryNote.textContent = shape.visualNote;
+            const specialLine = anySpecialConstantRelevant
+              ? `<div><strong>Why Those Special Numbers Appear:</strong> <span class="font-mono text-teal-900">${shape.visualFormula}</span></div>`
+              : '';
+            dom.intuitionDetails.innerHTML = `
+              ${specialLine}
+              <div><strong>Big Idea:</strong> Stack lots of thin flat slices one on top of another inside a 3D shape. Adding those slices up tells you how much space is inside (Volume)!</div>
+              ${renderVariableGlossaryHtml(shape)}
+            `;
+          } else {
+            dom.intuitionPrimaryNote.textContent = shape.note;
+            dom.intuitionDetails.innerHTML = `
+              <div><strong>Formulas:</strong> <span class="font-mono text-slate-900">${shape.formula}</span></div>
+              <div><strong>Calculus View (Cavalieri / Slicing):</strong> Each thin horizontal slice of cross-sectional area A(z) and thickness dz adds d(Volume) = A(z) dz, integrating to Volume = ∫ A(z) dz (${data.accumulatedVolume.toFixed(2)} / ${data.fullVolume.toFixed(2)} cm³).</div>
+              ${renderVariableGlossaryHtml(shape)}
+            `;
+          }
+        } else {
+          dom.mode3dSurfaceBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-white text-amber-900 shadow-2xs';
+          dom.mode3dVolumeBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+          dom.modeSummaryPill.textContent = 'Outer Faces → Surface Area';
+          dom.activeShapeSubtitle.textContent = 'Surface area is the sum of the areas of all outer surfaces wrapping the 3D shape.';
+          dom.sweepLabel.textContent = 'Sweep Outer Cover';
+          dom.densityLabel.textContent = 'Contour Resolution';
+          dom.densityHelper.textContent = 'Adjusts outer wireframe rings shown on the 3D shape.';
+          dom.canvasHint.textContent = 'Drag across canvas or slider to sweep the outer cover';
+          dom.canvasLegend.innerHTML = `
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-xs bg-amber-500/25 border border-amber-600"></span>Outer Surface Cover</span>
+          `;
+
+          dom.panel3dSurface.classList.remove('hidden');
+          dom.surfaceTotalBadge.textContent = `Total Outer Area: ${data.totalSurfaceArea.toFixed(2)} cm²`;
+          dom.surfaceFacesList.innerHTML = '';
+          shape.outerSurfaces.forEach((face) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50/50 border border-amber-200/70 text-xs';
+            row.innerHTML = `
+              <span class="font-medium text-slate-800">${face.name}</span>
+              <span class="font-mono font-bold text-amber-900">${face.area.toFixed(2)} cm²</span>
+            `;
+            dom.surfaceFacesList.appendChild(row);
+          });
+
+          addMetricCard('Outer Faces', `${shape.outerSurfaces.length}`, 'text-slate-900');
+          addMetricCard('Current Slice Area', `${data.currentSliceInfo.areaCm2.toFixed(2)} cm²`, 'text-slate-700');
+          addMetricCard('Outer Cover So Far', `${data.accumulatedSurfaceArea.toFixed(2)} cm²`, 'text-amber-800');
+          addMetricCard('Total Surface Area', `${data.totalSurfaceArea.toFixed(2)} cm²`, 'text-slate-900');
+
+          if (state.intuitionLevel === 'kids') {
+            dom.intuitionPrimaryNote.textContent = shape.visualNote;
+            const specialLine = anySpecialConstantRelevant
+              ? `<div><strong>Why Those Special Numbers Appear:</strong> <span class="font-mono text-amber-950">${shape.visualFormula}</span></div>`
+              : '';
+            dom.intuitionDetails.innerHTML = `
+              ${specialLine}
+              <div><strong>Big Idea:</strong> If you wrap the outside of a 3D shape with paper or paint every outside face and add up the area of each outer piece, that total is its Surface Area!</div>
+              ${renderVariableGlossaryHtml(shape)}
+            `;
+          } else {
+            dom.intuitionPrimaryNote.textContent = shape.note;
+            dom.intuitionDetails.innerHTML = `
+              <div><strong>Formulas:</strong> <span class="font-mono text-slate-900">${shape.formula}</span></div>
+              <div><strong>Calculus View:</strong> Surface Area sums every exterior patch dS across the boundary surface ∂Ω: Surface Area = ∬_{∂Ω} dS = ∑ A_outer_face (${data.accumulatedSurfaceArea.toFixed(2)} / ${data.totalSurfaceArea.toFixed(2)} cm²).</div>
+              ${renderVariableGlossaryHtml(shape)}
+            `;
+          }
+        }
+      }
+
+      renderCanvas();
+    }
+
+    function setDimension(newDim) {
+      if (state.dim === newDim) return;
+      state.dim = newDim;
+      renderShapeList();
+      updateUI();
+    }
+
+    function scrubFromPointerEvent(e) {
+      const rect = dom.canvas.getBoundingClientRect();
+      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+
+      if ((state.dim === '2d' || state.dim === '3d') && state.dragMode !== 'sweep') {
+        if (!state.lastPointer) {
+          state.lastPointer = { x: clientX, y: clientY };
+          return;
+        }
+        const deltaX = clientX - state.lastPointer.x;
+        const deltaY = clientY - state.lastPointer.y;
+        state.lastPointer = { x: clientX, y: clientY };
+        const tr = state.transform[state.dim];
+
+        if (state.dragMode === 'turn') {
+          let nextAngle = tr.angleDeg + deltaX * 0.9;
+          if (nextAngle > 180) nextAngle -= 360;
+          if (nextAngle < -180) nextAngle += 360;
+          tr.angleDeg = Math.max(-180, Math.min(180, nextAngle));
+        } else if (state.dragMode === 'move') {
+          tr.dx = Math.max(-6, Math.min(6, tr.dx + deltaX / 45));
+          tr.dy = Math.max(-6, Math.min(6, tr.dy - deltaY / 45));
+        }
+        updateUI();
+        return;
+      }
+
+      const ratio = (clientX - rect.left) / Math.max(1, rect.width);
+      state.sweep = Math.max(0, Math.min(1, ratio));
+      updateUI();
+    }
+
+    let lastFrameTime = null;
+    function animationTick(timestamp) {
+      if (state.playing) {
+        if (lastFrameTime !== null) {
+          const dtSec = (timestamp - lastFrameTime) / 1000;
+          state.sweep += dtSec * 0.22;
+          if (state.sweep > 1) {
+            state.sweep = 1;
+            state.playing = false;
+          }
+          updateUI();
+        }
+        lastFrameTime = timestamp;
+      } else {
+        lastFrameTime = null;
+      }
+      requestAnimationFrame(animationTick);
+    }
+
+    function bindEvents() {
+      dom.dimBtn1d.addEventListener('click', () => setDimension('1d'));
+      dom.dimBtn2d.addEventListener('click', () => setDimension('2d'));
+      dom.dimBtn3d.addEventListener('click', () => setDimension('3d'));
+
+      dom.sweepSlider.addEventListener('input', (e) => {
+        state.playing = false;
+        state.sweep = Number(e.target.value) / 1000;
+        updateUI();
+      });
+
+      dom.densitySlider.addEventListener('input', (e) => {
+        state.density[state.dim] = Number(e.target.value);
+        updateUI();
+      });
+
+      dom.playToggleBtn.addEventListener('click', () => {
+        if (!state.playing && state.sweep >= 0.999) {
+          state.sweep = 0;
+        }
+        state.playing = !state.playing;
+        updateUI();
+      });
+
+      dom.resetBtn.addEventListener('click', () => {
+        state.playing = false;
+        state.sweep = 0;
+        updateUI();
+      });
+
+      dom.toggle2dPerimeterBtn.addEventListener('click', () => {
+        state.show2dPerimeter = !state.show2dPerimeter;
+        updateUI();
+      });
+
+      dom.mode3dVolumeBtn.addEventListener('click', () => {
+        state.focus3d = 'volume';
+        updateUI();
+      });
+
+      dom.mode3dSurfaceBtn.addEventListener('click', () => {
+        state.focus3d = 'surface';
+        updateUI();
+      });
+
+      dom.levelKidsBtn.addEventListener('click', () => {
+        state.intuitionLevel = 'kids';
+        updateUI();
+      });
+
+      dom.levelCalcBtn.addEventListener('click', () => {
+        state.intuitionLevel = 'calc';
+        updateUI();
+      });
+
+      dom.toggleSpecialConstantsBtn.addEventListener('click', () => {
+        state.showConstantsGuide = !state.showConstantsGuide;
+        updateUI();
+      });
+
+      dom.dragModeSweepBtn.addEventListener('click', () => {
+        state.dragMode = 'sweep';
+        updateUI();
+      });
+
+      dom.dragModeTurnBtn.addEventListener('click', () => {
+        state.dragMode = 'turn';
+        updateUI();
+      });
+
+      dom.dragModeMoveBtn.addEventListener('click', () => {
+        state.dragMode = 'move';
+        updateUI();
+      });
+
+      dom.resetTransformBtn.addEventListener('click', () => {
+        if (state.dim === '2d' || state.dim === '3d') {
+          state.transform[state.dim] = { angleDeg: 0, dx: 0, dy: 0 };
+          updateUI();
+        }
+      });
+
+      dom.turnSlider.addEventListener('input', (e) => {
+        if (state.dim === '2d' || state.dim === '3d') {
+          state.transform[state.dim].angleDeg = Number(e.target.value);
+          updateUI();
+        }
+      });
+
+      dom.moveXSlider.addEventListener('input', (e) => {
+        if (state.dim === '2d' || state.dim === '3d') {
+          state.transform[state.dim].dx = Number(e.target.value) / 10;
+          updateUI();
+        }
+      });
+
+      dom.moveYSlider.addEventListener('input', (e) => {
+        if (state.dim === '2d' || state.dim === '3d') {
+          state.transform[state.dim].dy = Number(e.target.value) / 10;
+          updateUI();
+        }
+      });
+
+      dom.canvas.addEventListener('mousedown', (e) => {
+        state.playing = false;
+        state.isScrubbing = true;
+        state.lastPointer = { x: e.clientX, y: e.clientY };
+        scrubFromPointerEvent(e);
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!state.isScrubbing) return;
+        scrubFromPointerEvent(e);
+      });
+      window.addEventListener('mouseup', () => {
+        state.isScrubbing = false;
+        state.lastPointer = null;
+      });
+
+      dom.canvas.addEventListener('touchstart', (e) => {
+        state.playing = false;
+        state.isScrubbing = true;
+        if (e.touches && e.touches.length > 0) {
+          state.lastPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        scrubFromPointerEvent(e);
+      }, { passive: true });
+      dom.canvas.addEventListener('touchmove', (e) => {
+        if (!state.isScrubbing) return;
+        scrubFromPointerEvent(e);
+      }, { passive: true });
+      window.addEventListener('touchend', () => {
+        state.isScrubbing = false;
+        state.lastPointer = null;
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+    }
+
+    window.addEventListener('load', () => {
+      bindEvents();
+      renderShapeList();
+      updateUI();
+      resizeCanvas();
+      requestAnimationFrame(animationTick);
+    });
+  </script>
+</body>
+</html>
