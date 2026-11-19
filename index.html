@@ -3,26 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Primary Meta Tags -->
-<title>Area & Volume Calculator</title>
-<meta name="title" content="Area & Volume Calculator" />
-<meta name="description" content="Calculate the area and volume of 2D and 3D geometric shapes quickly and accurately." />
-
-<!-- Open Graph / Facebook / LinkedIn / Discord -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://areavolume.pages.dev/" />
-<meta property="og:title" content="Area & Volume Calculator" />
-<meta property="og:description" content="Calculate the area and volume of 2D and 3D geometric shapes quickly and accurately." />
-<meta property="og:image" content="https://areavolume.pages.dev/social.png" />
-<meta property="og:image:alt" content="Area & Volume Calculator Preview" />
-
-<!-- Twitter / X -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:url" content="https://areavolume.pages.dev/" />
-<meta name="twitter:title" content="Area & Volume Calculator" />
-<meta name="twitter:description" content="Calculate the area and volume of 2D and 3D geometric shapes quickly and accurately." />
-<meta name="twitter:image" content="https://areavolume.pages.dev/social.png" />
-<meta name="twitter:image:alt" content="Area & Volume Calculator Preview" />
+  <title>Slice &amp; Sum Geometry Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -95,123 +76,13 @@
 
     <!-- Main Two-Column Grid -->
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-      <!-- Left Column: Shape Picker & Controls -->
-      <section class="lg:col-span-4 space-y-4">
-        <!-- Shape Selector Card -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-900">Choose a Shape</h2>
-            <span id="shape-count-badge" class="text-xs font-mono text-slate-500">10 shapes</span>
-          </div>
-
-          <!-- Regular / Standard Group -->
-          <div class="space-y-1.5">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Regular &amp; Standard
-            </div>
-            <div id="regular-shapes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5"></div>
-          </div>
-
-          <!-- Irregular / Compound Group -->
-          <div class="space-y-1.5 pt-1">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Irregular &amp; Compound
-            </div>
-            <div id="irregular-shapes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5"></div>
-          </div>
-        </div>
-
-        <!-- Sweep & Density Controls Card -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-900">Accumulation Controls</h2>
-            <span class="text-[11px] font-mono text-slate-400">Sweep &amp; Slices</span>
-          </div>
-
-          <!-- Sweep Progress Slider -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between text-xs">
-              <label id="sweep-label" for="sweep-slider" class="font-semibold text-slate-700">
-                Sweep Along Path
-              </label>
-              <span id="sweep-percent" class="font-mono font-semibold text-teal-800">0%</span>
-            </div>
-            <input
-              id="sweep-slider"
-              type="range"
-              min="0"
-              max="1000"
-              value="0"
-              class="w-full h-2 bg-slate-200 rounded-lg"
-            />
-          </div>
-
-          <!-- Density / Slice Count Slider -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between text-xs">
-              <label id="density-label" for="density-slider" class="font-semibold text-slate-700">
-                Number of Steps
-              </label>
-              <span id="density-value" class="font-mono font-semibold text-slate-800">36</span>
-            </div>
-            <input
-              id="density-slider"
-              type="range"
-              min="6"
-              max="80"
-              value="36"
-              class="w-full h-2 bg-slate-200 rounded-lg"
-            />
-            <p id="density-helper" class="text-[11px] text-slate-500 leading-snug">
-              More steps divide the path into shorter segments.
-            </p>
-          </div>
-
-          <!-- 2D Perimeter Calculation & Area Formula Strip -->
-          <div id="mode-2d-panel" class="hidden space-y-2.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="text-xs font-bold text-emerald-950">2D Area &amp; Perimeter</span>
-              <button
-                id="toggle-2d-perimeter-btn"
-                type="button"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-amber-600 text-white border-amber-700"
-              >
-                Highlight Rim: ON
-              </button>
-            </div>
-            <div class="text-[11px] font-mono text-emerald-900 bg-white/90 px-2.5 py-1.5 rounded-lg border border-emerald-200/70">
-              <span class="font-semibold">Area Formula:</span> <span id="area-formula-display">A = 10 × 10 = 100 cm²</span>
-            </div>
-            <div id="perimeter-2d-readout" class="text-[11px] text-slate-700 bg-white/95 p-2.5 rounded-lg border border-slate-200/80 space-y-1.5">
-              <div class="flex items-center justify-between font-mono">
-                <span class="font-semibold text-slate-800">Perimeter Formula:</span>
-                <span id="perimeter-formula-display" class="text-amber-800 font-semibold">P = 4s = 4 × 10 = 40 cm</span>
-              </div>
-              <div class="flex items-center justify-between font-mono tabular-nums">
-                <span>Total Perimeter:</span>
-                <span id="perimeter-total-display" class="font-bold text-slate-900">40.00 cm</span>
-              </div>
-              <div class="flex items-center justify-between font-mono tabular-nums">
-                <span>Outer Edge Traced:</span>
-                <span id="perimeter-swept-display" class="font-bold text-amber-800">0.00 / 40.00 cm</span>
-              </div>
-              <div class="pt-1 border-t border-slate-100 text-[11px] text-slate-700">
-                <span class="font-semibold text-slate-800">How Perimeter Is Calculated:</span>
-                <span id="perimeter-calc-steps" class="font-mono text-slate-800 block mt-0.5"></span>
-              </div>
-              <p id="perimeter-explanation-note" class="text-[11px] text-slate-600 leading-snug pt-0.5"></p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Right Column: Interactive Canvas, Readouts & Intuition -->
-      <section class="lg:col-span-8 space-y-4">
+      <!-- Right/Primary Column First on Mobile so Canvas & Metrics Appear Immediately -->
+      <section class="order-1 lg:order-2 lg:col-span-8 space-y-4">
         <!-- Canvas Card -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 id="active-shape-title" class="text-base sm:text-lg font-bold text-slate-900">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div class="min-w-0">
+              <h2 id="active-shape-title" class="text-base sm:text-lg font-bold text-slate-900 break-words">
                 Straight Line Segment (12 cm)
               </h2>
               <p id="active-shape-subtitle" class="text-xs text-slate-500">
@@ -238,7 +109,7 @@
                 </button>
               </div>
 
-              <div id="mode-3d-toggle-wrap" class="hidden bg-slate-100/90 border border-slate-200/90 rounded-xl p-1.5 space-y-1">
+              <div id="mode-3d-toggle-wrap" class="hidden w-full sm:w-auto bg-slate-100/90 border border-slate-200/90 rounded-xl p-1.5 space-y-1">
                 <div class="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                   What do you want to measure?
                 </div>
@@ -265,13 +136,13 @@
           <div id="canvas-legend" class="flex flex-wrap items-center gap-3 text-[11px] text-slate-600"></div>
 
           <!-- Responsive Canvas Container -->
-          <div id="canvas-wrapper" class="relative w-full h-72 sm:h-96 rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden">
+          <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden">
             <canvas id="lab-canvas"></canvas>
           </div>
 
-          <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-slate-500">
             <span id="canvas-hint">Tip: Drag horizontally across the drawing area to scrub accumulation.</span>
-            <span id="shape-formula-badge" class="font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md"></span>
+            <span id="shape-formula-badge" class="font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded-md break-all sm:break-normal max-w-full"></span>
           </div>
 
           <!-- Turn & Move Controls for 2D and 3D Shapes -->
@@ -282,21 +153,21 @@
                 <button
                   id="drag-mode-sweep-btn"
                   type="button"
-                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800"
+                  class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800"
                 >
                   Scrub Sweep
                 </button>
                 <button
                   id="drag-mode-turn-btn"
                   type="button"
-                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                  class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                 >
                   Turn Shape
                 </button>
                 <button
                   id="drag-mode-move-btn"
                   type="button"
-                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                  class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                 >
                   Move Shape
                 </button>
@@ -304,7 +175,7 @@
               <button
                 id="reset-transform-btn"
                 type="button"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
               >
                 Center &amp; Reset Turn
               </button>
@@ -322,7 +193,7 @@
                   min="-180"
                   max="180"
                   value="0"
-                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                  class="w-full h-2 bg-slate-200 rounded-lg"
                 />
               </div>
 
@@ -337,7 +208,7 @@
                   min="-60"
                   max="60"
                   value="0"
-                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                  class="w-full h-2 bg-slate-200 rounded-lg"
                 />
               </div>
 
@@ -352,7 +223,7 @@
                   min="-60"
                   max="60"
                   value="0"
-                  class="w-full h-1.5 bg-slate-200 rounded-lg"
+                  class="w-full h-2 bg-slate-200 rounded-lg"
                 />
               </div>
             </div>
@@ -430,6 +301,116 @@
                 <p id="guide-four-thirds-text" class="text-slate-700 leading-relaxed"></p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Left/Secondary Column: Shape Picker & Controls -->
+      <section class="order-2 lg:order-1 lg:col-span-4 space-y-4">
+        <!-- Sweep & Density Controls Card -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-900">Accumulation Controls</h2>
+            <span class="text-[11px] font-mono text-slate-400">Sweep &amp; Slices</span>
+          </div>
+
+          <!-- Sweep Progress Slider -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <label id="sweep-label" for="sweep-slider" class="font-semibold text-slate-700">
+                Sweep Along Path
+              </label>
+              <span id="sweep-percent" class="font-mono font-semibold text-teal-800">0%</span>
+            </div>
+            <input
+              id="sweep-slider"
+              type="range"
+              min="0"
+              max="1000"
+              value="0"
+              class="w-full h-2.5 bg-slate-200 rounded-lg"
+            />
+          </div>
+
+          <!-- Density / Slice Count Slider -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <label id="density-label" for="density-slider" class="font-semibold text-slate-700">
+                Number of Steps
+              </label>
+              <span id="density-value" class="font-mono font-semibold text-slate-800">36</span>
+            </div>
+            <input
+              id="density-slider"
+              type="range"
+              min="6"
+              max="80"
+              value="36"
+              class="w-full h-2.5 bg-slate-200 rounded-lg"
+            />
+            <p id="density-helper" class="text-[11px] text-slate-500 leading-snug">
+              More steps divide the path into shorter segments.
+            </p>
+          </div>
+
+          <!-- 2D Perimeter Calculation & Area Formula Strip -->
+          <div id="mode-2d-panel" class="hidden space-y-2.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-950">2D Area &amp; Perimeter</span>
+              <button
+                id="toggle-2d-perimeter-btn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-amber-600 text-white border-amber-700"
+              >
+                Highlight Rim: ON
+              </button>
+            </div>
+            <div class="text-[11px] font-mono text-emerald-900 bg-white/90 px-2.5 py-1.5 rounded-lg border border-emerald-200/70 break-words">
+              <span class="font-semibold">Area Formula:</span> <span id="area-formula-display">A = 10 × 10 = 100 cm²</span>
+            </div>
+            <div id="perimeter-2d-readout" class="text-[11px] text-slate-700 bg-white/95 p-2.5 rounded-lg border border-slate-200/80 space-y-1.5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 font-mono">
+                <span class="font-semibold text-slate-800">Perimeter Formula:</span>
+                <span id="perimeter-formula-display" class="text-amber-800 font-semibold">P = 4s = 4 × 10 = 40 cm</span>
+              </div>
+              <div class="flex items-center justify-between font-mono tabular-nums">
+                <span>Total Perimeter:</span>
+                <span id="perimeter-total-display" class="font-bold text-slate-900">40.00 cm</span>
+              </div>
+              <div class="flex items-center justify-between font-mono tabular-nums">
+                <span>Outer Edge Traced:</span>
+                <span id="perimeter-swept-display" class="font-bold text-amber-800">0.00 / 40.00 cm</span>
+              </div>
+              <div class="pt-1 border-t border-slate-100 text-[11px] text-slate-700">
+                <span class="font-semibold text-slate-800">How Perimeter Is Calculated:</span>
+                <span id="perimeter-calc-steps" class="font-mono text-slate-800 block mt-0.5 break-words"></span>
+              </div>
+              <p id="perimeter-explanation-note" class="text-[11px] text-slate-600 leading-snug pt-0.5"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shape Selector Card -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-900">Choose a Shape</h2>
+            <span id="shape-count-badge" class="text-xs font-mono text-slate-500">10 shapes</span>
+          </div>
+
+          <!-- Regular / Standard Group -->
+          <div class="space-y-1.5">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Regular &amp; Standard
+            </div>
+            <div id="regular-shapes-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5"></div>
+          </div>
+
+          <!-- Irregular / Compound Group -->
+          <div class="space-y-1.5 pt-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Irregular &amp; Compound
+            </div>
+            <div id="irregular-shapes-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5"></div>
           </div>
         </div>
       </section>
@@ -1592,8 +1573,9 @@
     }
 
     function renderCanvas() {
-      const width = dom.canvas.width / Math.min(window.devicePixelRatio || 1, 2);
-      const height = dom.canvas.height / Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = dom.canvas.width / dpr;
+      const height = dom.canvas.height / dpr;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -1626,7 +1608,7 @@
     }
 
     function render1DCanvas(ctx, width, height, data) {
-      const pad = 34;
+      const pad = 28;
       const scaleX = (width - pad * 2) / 2;
       const scaleY = (height - pad * 2) / 2;
       const cx = width / 2;
@@ -1710,7 +1692,7 @@
     }
 
     function render2DCanvas(ctx, width, height, data) {
-      const pad = 36;
+      const pad = 28;
       const scale = Math.min(width - pad * 2, height - pad * 2) / 2;
       const t2d = state.transform['2d'] || { angleDeg: 0, dx: 0, dy: 0 };
       const rad = (t2d.angleDeg * Math.PI) / 180;
@@ -1796,11 +1778,11 @@
           const a = screenPts[i];
           const b = screenPts[(i + 1) % screenPts.length];
           const d = segLens[i];
-          if (rem >= d) {
+          if (state.sweep >= 0.9999 || rem >= d - 1e-6) {
             ctx.lineTo(b.x, b.y);
             rem -= d;
           } else {
-            const f = d > 1e-6 ? rem / d : 0;
+            const f = d > 1e-6 ? Math.max(0, Math.min(1, rem / d)) : 0;
             ctx.lineTo(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
             break;
           }
@@ -1836,7 +1818,7 @@
       ctx.restore();
     }
 
-    function project3D(x, y, z, centerX, centerY, unitPx, shapeId) {
+    function project3D(x, y, z, centerX, centerY, unitPx) {
       const t3d = state.transform['3d'] || { angleDeg: 0, dx: 0, dy: 0 };
       const rad = (t3d.angleDeg * Math.PI) / 180;
       const cosR = Math.cos(rad);
@@ -1856,7 +1838,7 @@
       };
     }
 
-    function traceSlicePath(ctx, info, yNorm, centerX, centerY, unitPx, shapeId) {
+    function traceSlicePath(ctx, info, yNorm, centerX, centerY, unitPx) {
       if (info.type === 'circle') {
         const steps = 64;
         ctx.beginPath();
@@ -1864,7 +1846,7 @@
           const ang = (i / steps) * Math.PI * 2;
           const px = info.rx * Math.cos(ang);
           const pz = info.rz * Math.sin(ang);
-          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx, shapeId);
+          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx);
           if (i === 0) ctx.moveTo(sp.x, sp.y);
           else ctx.lineTo(sp.x, sp.y);
         }
@@ -1880,7 +1862,7 @@
         ];
         ctx.beginPath();
         corners.forEach(([px, pz], idx) => {
-          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx, shapeId);
+          const sp = project3D(px, yNorm, pz, centerX, centerY, unitPx);
           if (idx === 0) ctx.moveTo(sp.x, sp.y);
           else ctx.lineTo(sp.x, sp.y);
         });
@@ -1888,7 +1870,7 @@
       } else if (info.type === 'poly') {
         ctx.beginPath();
         info.pts.forEach((pt, idx) => {
-          const sp = project3D(pt.x, yNorm, pt.y * 0.78, centerX, centerY, unitPx, shapeId);
+          const sp = project3D(pt.x, yNorm, pt.y * 0.78, centerX, centerY, unitPx);
           if (idx === 0) ctx.moveTo(sp.x, sp.y);
           else ctx.lineTo(sp.x, sp.y);
         });
@@ -1905,10 +1887,10 @@
 
       ctx.save();
       const baseCorners = [
-        project3D(-0.95, yBottom, -0.95, centerX, centerY, unitPx, data.shape.id),
-        project3D(0.95, yBottom, -0.95, centerX, centerY, unitPx, data.shape.id),
-        project3D(0.95, yBottom, 0.95, centerX, centerY, unitPx, data.shape.id),
-        project3D(-0.95, yBottom, 0.95, centerX, centerY, unitPx, data.shape.id)
+        project3D(-0.95, yBottom, -0.95, centerX, centerY, unitPx),
+        project3D(0.95, yBottom, -0.95, centerX, centerY, unitPx),
+        project3D(0.95, yBottom, 0.95, centerX, centerY, unitPx),
+        project3D(-0.95, yBottom, 0.95, centerX, centerY, unitPx)
       ];
       ctx.beginPath();
       baseCorners.forEach((p, idx) => {
@@ -1937,14 +1919,14 @@
           const y1 = yBottom + (item.uStart + (item.uEnd - item.uStart) * frac) * totalHeightNorm;
 
           ctx.save();
-          traceSlicePath(ctx, item.info, y0, centerX, centerY, unitPx, data.shape.id);
+          traceSlicePath(ctx, item.info, y0, centerX, centerY, unitPx);
           ctx.fillStyle = 'rgba(13, 148, 136, 0.24)';
           ctx.fill();
           ctx.strokeStyle = 'rgba(15, 118, 110, 0.55)';
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          traceSlicePath(ctx, item.info, y1, centerX, centerY, unitPx, data.shape.id);
+          traceSlicePath(ctx, item.info, y1, centerX, centerY, unitPx);
           ctx.fillStyle = isPartial ? 'rgba(20, 184, 166, 0.32)' : 'rgba(13, 148, 136, 0.42)';
           ctx.fill();
           ctx.strokeStyle = '#0f766e';
@@ -1961,7 +1943,7 @@
           const active = u <= state.sweep + 1e-5;
 
           ctx.save();
-          traceSlicePath(ctx, info, yN, centerX, centerY, unitPx, data.shape.id);
+          traceSlicePath(ctx, info, yN, centerX, centerY, unitPx);
           if (active) {
             ctx.fillStyle = 'rgba(245, 158, 11, 0.14)';
             ctx.fill();
@@ -1979,7 +1961,7 @@
         const topInfo = data.shape.sliceAt(1);
         if (state.sweep > 0.02) {
           ctx.save();
-          traceSlicePath(ctx, botInfo, yBottom, centerX, centerY, unitPx, data.shape.id);
+          traceSlicePath(ctx, botInfo, yBottom, centerX, centerY, unitPx);
           ctx.fillStyle = 'rgba(217, 119, 6, 0.26)';
           ctx.fill();
           ctx.strokeStyle = '#b45309';
@@ -1989,7 +1971,7 @@
         }
         if (state.sweep >= 0.98) {
           ctx.save();
-          traceSlicePath(ctx, topInfo, yBottom + totalHeightNorm, centerX, centerY, unitPx, data.shape.id);
+          traceSlicePath(ctx, topInfo, yBottom + totalHeightNorm, centerX, centerY, unitPx);
           ctx.fillStyle = 'rgba(245, 158, 11, 0.30)';
           ctx.fill();
           ctx.strokeStyle = '#b45309';
@@ -2002,10 +1984,10 @@
 
     function addMetricCard(label, value, valueClass = 'text-slate-900') {
       const card = document.createElement('div');
-      card.className = 'bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-2xs space-y-1';
+      card.className = 'bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 shadow-2xs space-y-1 min-w-0';
       card.innerHTML = `
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">${label}</div>
-        <div class="text-base sm:text-lg font-extrabold font-mono tabular-nums ${valueClass}">${value}</div>
+        <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 truncate">${label}</div>
+        <div class="text-sm sm:text-lg font-extrabold font-mono tabular-nums ${valueClass} truncate">${value}</div>
       `;
       dom.metricsGrid.appendChild(card);
     }
@@ -2023,9 +2005,10 @@
         btn.type = 'button';
         const isSelected = shape.id === activeId;
         btn.className = isSelected
-          ? 'w-full text-left px-3 py-2 rounded-xl text-xs font-semibold border transition bg-teal-50/90 text-teal-950 border-teal-400 shadow-2xs'
-          : 'w-full text-left px-3 py-2 rounded-xl text-xs font-medium border transition bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50';
+          ? 'w-full text-left px-3 py-2.5 sm:py-2 rounded-xl text-xs font-semibold border transition bg-teal-50/90 text-teal-950 border-teal-400 shadow-2xs truncate'
+          : 'w-full text-left px-3 py-2.5 sm:py-2 rounded-xl text-xs font-medium border transition bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50 truncate';
         btn.textContent = shape.shortName;
+        btn.title = shape.name;
         btn.addEventListener('click', () => {
           state.selectedId[state.dim] = shape.id;
           renderShapeList();
@@ -2049,8 +2032,8 @@
       tabs.forEach(({ dim, el }) => {
         const active = state.dim === dim;
         el.className = active
-          ? 'dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs'
-          : 'dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900';
+          ? 'dim-tab px-2.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs'
+          : 'dim-tab px-2.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900';
       });
     }
 
@@ -2123,8 +2106,8 @@
         dom.moveYSlider.value = String(Math.round(tr.dy * 10));
         dom.moveYValue.textContent = tr.dy.toFixed(1);
 
-        const activeBtnCls = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800';
-        const inactiveBtnCls = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50';
+        const activeBtnCls = 'px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold border transition bg-teal-700 text-white border-teal-800';
+        const inactiveBtnCls = 'px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold border transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50';
         dom.dragModeSweepBtn.className = state.dragMode === 'sweep' ? activeBtnCls : inactiveBtnCls;
         dom.dragModeTurnBtn.className = state.dragMode === 'turn' ? activeBtnCls : inactiveBtnCls;
         dom.dragModeMoveBtn.className = state.dragMode === 'move' ? activeBtnCls : inactiveBtnCls;
@@ -2342,8 +2325,14 @@
 
     function scrubFromPointerEvent(e) {
       const rect = dom.canvas.getBoundingClientRect();
-      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+      const touch = e.touches && e.touches.length > 0
+        ? e.touches[0]
+        : (e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : null);
+      const clientX = touch ? touch.clientX : e.clientX;
+      const clientY = touch ? touch.clientY : e.clientY;
+      if (typeof clientX !== 'number' || typeof clientY !== 'number' || Number.isNaN(clientX) || Number.isNaN(clientY)) {
+        return;
+      }
 
       if ((state.dim === '2d' || state.dim === '3d') && state.dragMode !== 'sweep') {
         if (!state.lastPointer) {
