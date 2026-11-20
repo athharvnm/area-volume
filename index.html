@@ -2922,24 +2922,34 @@
       requestAnimationFrame(updateScrollRail);
 
       window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && document.activeElement && document.activeElement.tagName !== 'INPUT') {
+        const activeTag = document.activeElement && document.activeElement.tagName;
+        const isTypingOrSlider = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
+        const isShapeSelectorFocused = Boolean(
+          document.activeElement &&
+          document.activeElement.closest &&
+          (document.activeElement.closest('#regular-shapes-list') ||
+            document.activeElement.closest('#irregular-shapes-list') ||
+            document.activeElement.closest('#mobile-shape-gallery'))
+        );
+
+        if (e.code === 'Space' && !isTypingOrSlider) {
           e.preventDefault();
           if (!state.playing && state.sweep >= 0.999) {
             state.sweep = 0;
           }
           state.playing = !state.playing;
           updateUI();
-        } else if (e.code === 'ArrowRight') {
+        } else if (e.code === 'ArrowRight' && !isTypingOrSlider) {
           e.preventDefault();
           state.playing = false;
           state.sweep = Math.min(1, state.sweep + 0.03);
           updateUI();
-        } else if (e.code === 'ArrowLeft') {
+        } else if (e.code === 'ArrowLeft' && !isTypingOrSlider) {
           e.preventDefault();
           state.playing = false;
           state.sweep = Math.max(0, state.sweep - 0.03);
           updateUI();
-        } else if (e.code === 'ArrowDown' || e.code === 'ArrowUp') {
+        } else if ((e.code === 'ArrowDown' || e.code === 'ArrowUp') && !isTypingOrSlider && isShapeSelectorFocused) {
           e.preventDefault();
           const list = getShapesForDim(state.dim);
           const idx = list.findIndex((s) => s.id === state.selectedId[state.dim]);
