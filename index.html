@@ -32,22 +32,41 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
+      @media (min-width: 1024px) {
+        .studio-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .studio-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .studio-scroll::-webkit-scrollbar-thumb {
+          background-color: rgba(148, 163, 184, 0.45);
+          border-radius: 9999px;
+        }
+        .studio-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(100, 116, 139, 0.65);
+        }
+      }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen antialiased selection:bg-teal-100 selection:text-teal-900">
-  <div class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
+<body class="bg-gradient-to-br from-slate-100 via-slate-50 to-teal-50/40 text-slate-900 min-h-screen antialiased selection:bg-teal-100 selection:text-teal-900">
+  <div class="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5">
     <!-- Header Bar -->
-    <header class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <header class="bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-2xl p-4 sm:p-5 lg:px-6 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div class="space-y-1">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse"></span>
             Visual Geometry Lab
           </span>
           <span id="mode-summary-pill" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
             Points → Length
           </span>
+          <span class="hidden lg:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-slate-100/80 text-slate-500 border border-slate-200/70">
+            Shortcuts: Space = Play · ←/→ = Scrub · ↑/↓ = Shape
+          </span>
         </div>
-        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+        <h1 class="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight text-slate-900">
           Slice &amp; Sum Geometry Studio
         </h1>
         <p class="text-xs sm:text-sm text-slate-600 max-w-3xl">
@@ -56,33 +75,32 @@
       </div>
 
       <!-- Dimension Switcher -->
-      <nav aria-label="Dimension mode" class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80 shrink-0">
+      <nav aria-label="Dimension mode" class="grid grid-cols-3 gap-1.5 bg-slate-100/90 p-1.5 rounded-xl border border-slate-200/90 shrink-0 lg:min-w-[340px]">
         <button
           id="dim-btn-1d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs"
+          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs"
         >
           1D Length
         </button>
         <button
           id="dim-btn-2d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
         >
           2D Area
         </button>
         <button
           id="dim-btn-3d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
         >
           3D Solids
         </button>
       </nav>
     </header>
 
-    <!-- Mobile & Tablet Quick Shape Bar (Visible on < lg screens right at the top) -->
-    <!-- Mobile & Tablet Visual Shape Picker (Replaces Dropdown with Icon Cards + Filter) -->
+    <!-- Mobile & Tablet Visual Shape Picker (Visible on < lg screens right at the top) -->
     <section aria-label="Shape gallery" class="lg:hidden bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -99,17 +117,22 @@
     </section>
 
     <!-- Main Two-Column Grid -->
-    <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
       <!-- Right/Primary Column First on Mobile so Canvas & Metrics Appear Immediately -->
-      <section class="order-1 lg:order-2 lg:col-span-8 space-y-4">
+      <section class="order-1 lg:order-2 lg:col-span-8 space-y-4 lg:space-y-5">
         <!-- Canvas Card -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 lg:p-5 shadow-sm space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div class="min-w-0">
-              <h2 id="active-shape-title" class="text-base sm:text-lg font-bold text-slate-900 break-words">
-                Straight Line Segment (12 cm)
-              </h2>
-              <p id="active-shape-subtitle" class="text-xs text-slate-500">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 id="active-shape-title" class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 break-words">
+                  Straight Line Segment (12 cm)
+                </h2>
+                <span id="active-shape-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
+                  Regular
+                </span>
+              </div>
+              <p id="active-shape-subtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5">
                 Drag across the canvas or move the sweep slider to add tiny steps together.
               </p>
             </div>
@@ -160,8 +183,18 @@
           <div id="canvas-legend" class="flex flex-wrap items-center gap-3 text-[11px] text-slate-600"></div>
 
           <!-- Responsive Canvas Container -->
-          <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden">
+          <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 lg:h-[430px] rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden shadow-inner">
             <canvas id="lab-canvas"></canvas>
+            <!-- Desktop Live Accumulation Rate Spark-Overlay Toggle -->
+            <button
+              id="toggle-rate-graph-btn"
+              type="button"
+              class="hidden lg:inline-flex items-center gap-1.5 absolute top-3 right-3 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white/90 hover:bg-white text-slate-700 border border-slate-200/90 shadow-xs backdrop-blur-xs transition"
+              title="Toggle live slice-size & accumulation curve inside the canvas"
+            >
+              <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+              <span>Live Curve: ON</span>
+            </button>
           </div>
 
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-slate-500">
@@ -329,10 +362,43 @@
         </div>
       </section>
 
-      <!-- Left/Secondary Column: Shape Picker & Controls -->
-      <section class="order-2 lg:order-1 lg:col-span-4 space-y-4">
+      <!-- Left/Secondary Column: Desktop Shape Studio Gallery & Controls -->
+      <section class="order-2 lg:order-1 lg:col-span-4 lg:sticky lg:top-5 space-y-4">
+        <!-- Desktop Interactive Shape Studio Gallery -->
+        <div class="hidden lg:block bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-slate-900">Shape Studio</h2>
+              <span id="shape-count-badge" class="text-[11px] font-mono text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full">10 shapes</span>
+            </div>
+            <div class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200/80 text-[11px] font-semibold">
+              <button type="button" data-filter="all" class="shape-filter-btn px-2.5 py-1 rounded-lg bg-white text-teal-800 shadow-2xs transition">All</button>
+              <button type="button" data-filter="regular" class="shape-filter-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">Regular</button>
+              <button type="button" data-filter="irregular" class="shape-filter-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">Irregular</button>
+            </div>
+          </div>
+
+          <!-- Regular / Standard Visual Grid -->
+          <div id="desktop-regular-group" class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <span>Regular &amp; Standard</span>
+              <span class="font-mono text-[10px]">Symmetrical</span>
+            </div>
+            <div id="regular-shapes-list" class="grid grid-cols-2 gap-2"></div>
+          </div>
+
+          <!-- Irregular / Compound Visual Grid -->
+          <div id="desktop-irregular-group" class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <span>Irregular &amp; Compound</span>
+              <span class="font-mono text-[10px]">Variable</span>
+            </div>
+            <div id="irregular-shapes-list" class="grid grid-cols-2 gap-2"></div>
+          </div>
+        </div>
+
         <!-- Sweep & Density Controls Card -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-4">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold text-slate-900">Accumulation Controls</h2>
             <span class="text-[11px] font-mono text-slate-400">Sweep &amp; Slices</span>
@@ -1260,6 +1326,7 @@
       focus3d: 'volume',
       intuitionLevel: 'kids',
       showConstantsGuide: true,
+      showRateGraph: true,
       mobileShapeFilter: 'all',
       playing: false,
       isScrubbing: false,
@@ -1272,12 +1339,15 @@
       dimBtn3d: document.getElementById('dim-btn-3d'),
       mobileShapeCount: document.getElementById('mobile-shape-count'),
       mobileShapeGallery: document.getElementById('mobile-shape-gallery'),
+      desktopRegularGroup: document.getElementById('desktop-regular-group'),
+      desktopIrregularGroup: document.getElementById('desktop-irregular-group'),
       modeSummaryPill: document.getElementById('mode-summary-pill'),
       shapeCountBadge: document.getElementById('shape-count-badge'),
       regularShapesList: document.getElementById('regular-shapes-list'),
       irregularShapesList: document.getElementById('irregular-shapes-list'),
       playToggleBtn: document.getElementById('play-toggle-btn'),
       resetBtn: document.getElementById('reset-btn'),
+      toggleRateGraphBtn: document.getElementById('toggle-rate-graph-btn'),
       sweepLabel: document.getElementById('sweep-label'),
       sweepSlider: document.getElementById('sweep-slider'),
       sweepPercent: document.getElementById('sweep-percent'),
@@ -1298,6 +1368,7 @@
       mode3dVolumeBtn: document.getElementById('mode-3d-volume-btn'),
       mode3dSurfaceBtn: document.getElementById('mode-3d-surface-btn'),
       activeShapeTitle: document.getElementById('active-shape-title'),
+      activeShapeBadge: document.getElementById('active-shape-badge'),
       activeShapeSubtitle: document.getElementById('active-shape-subtitle'),
       canvasLegend: document.getElementById('canvas-legend'),
       canvasWrapper: document.getElementById('canvas-wrapper'),
@@ -1673,6 +1744,106 @@
       } else {
         render3DCanvas(ctx, width, height, data);
       }
+
+      if (width >= 680 && state.showRateGraph) {
+        renderDesktopLiveCurveHUD(ctx, width, height, data);
+      }
+    }
+
+    function renderDesktopLiveCurveHUD(ctx, width, height, data) {
+      const boxW = 196;
+      const boxH = 92;
+      const x0 = width - boxW - 14;
+      const y0 = height - boxH - 14;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+      ctx.strokeStyle = 'rgba(203, 213, 225, 0.95)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x0, y0, boxW, boxH, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '600 10px Inter, sans-serif';
+      const title =
+        state.dim === '1d'
+          ? 'Cumulative Length vs. Sweep'
+          : state.dim === '2d'
+            ? 'Strip Height & Area Curve'
+            : state.focus3d === 'surface'
+              ? 'Outer Cover Progress'
+              : 'Slice Area & Volume Curve';
+      ctx.fillText(title, x0 + 10, y0 + 16);
+
+      const gx = x0 + 10;
+      const gy = y0 + 24;
+      const gw = boxW - 20;
+      const gh = boxH - 34;
+
+      // Baseline
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gx, gy + gh);
+      ctx.lineTo(gx + gw, gy + gh);
+      ctx.stroke();
+
+      // Draw rate profile (bars) and cumulative curve
+      const samples = 32;
+      const rates = [];
+      for (let i = 0; i < samples; i++) {
+        const u = (i + 0.5) / samples;
+        if (state.dim === '1d') {
+          rates.push(1);
+        } else if (state.dim === '2d') {
+          const { minX, maxX } = data.shape.bounds;
+          const xNorm = minX + u * (maxX - minX);
+          const intervals = getPolygonVerticalIntervals(data.shape.pts, xNorm);
+          let len = 0;
+          for (const [ya, yb] of intervals) len += Math.max(0, yb - ya);
+          rates.push(len);
+        } else {
+          rates.push(data.shape.sliceAt(u).areaCm2);
+        }
+      }
+      const maxRate = Math.max(1e-6, ...rates);
+
+      // Slice rate bars
+      const barW = gw / samples;
+      for (let i = 0; i < samples; i++) {
+        const u = i / samples;
+        const barH = (rates[i] / maxRate) * (gh * 0.78);
+        ctx.fillStyle = u <= state.sweep ? 'rgba(13, 148, 136, 0.28)' : 'rgba(203, 213, 225, 0.35)';
+        ctx.fillRect(gx + i * barW + 0.5, gy + gh - barH, Math.max(1, barW - 1), barH);
+      }
+
+      // Cumulative S-curve / ramp
+      ctx.beginPath();
+      let cum = 0;
+      const totalCum = rates.reduce((a, b) => a + b, 0) || 1;
+      for (let i = 0; i <= samples; i++) {
+        const px = gx + (i / samples) * gw;
+        const py = gy + gh - (cum / totalCum) * (gh * 0.92);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+        if (i < samples) cum += rates[i];
+      }
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Current sweep marker
+      const sweepX = gx + state.sweep * gw;
+      ctx.beginPath();
+      ctx.moveTo(sweepX, gy);
+      ctx.lineTo(sweepX, gy + gh);
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.restore();
     }
 
     function render1DCanvas(ctx, width, height, data) {
@@ -2063,33 +2234,51 @@
     function renderShapeList() {
       const shapes = getShapesForDim(state.dim);
       const activeId = state.selectedId[state.dim];
-      dom.shapeCountBadge.textContent = `${shapes.length} shapes`;
+      const filter = state.mobileShapeFilter;
+
+      const filteredShapes = shapes.filter((s) => (filter === 'all' ? true : s.category === filter));
+      dom.shapeCountBadge.textContent = `${filteredShapes.length} shapes`;
+      dom.mobileShapeCount.textContent = `${filteredShapes.length}`;
 
       dom.regularShapesList.innerHTML = '';
       dom.irregularShapesList.innerHTML = '';
       dom.mobileShapeGallery.innerHTML = '';
 
       document.querySelectorAll('.shape-filter-btn').forEach((btn) => {
-        const isFilterActive = btn.dataset.filter === state.mobileShapeFilter;
+        const isFilterActive = btn.dataset.filter === filter;
         btn.className = isFilterActive
           ? 'shape-filter-btn px-2.5 py-1 rounded-lg bg-white text-teal-800 shadow-2xs transition'
           : 'shape-filter-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition';
       });
 
-      const filteredMobileShapes = shapes.filter((s) =>
-        state.mobileShapeFilter === 'all' ? true : s.category === state.mobileShapeFilter
-      );
-      dom.mobileShapeCount.textContent = `${filteredMobileShapes.length}`;
+      dom.desktopRegularGroup.classList.toggle('hidden', filter === 'irregular');
+      dom.desktopIrregularGroup.classList.toggle('hidden', filter === 'regular');
 
       shapes.forEach((shape) => {
         const isSelected = shape.id === activeId;
+        const metricHint =
+          state.dim === '1d'
+            ? `${shape.exactLength} cm`
+            : state.dim === '2d'
+              ? `${shape.exactArea.toFixed(0)} cm²`
+              : `${shape.exactVolume.toFixed(0)} cm³`;
 
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = isSelected
-          ? 'w-full flex items-center gap-2.5 text-left px-2.5 py-2 rounded-xl text-xs font-semibold border transition bg-teal-50/90 text-teal-950 border-teal-400 shadow-2xs'
-          : 'w-full flex items-center gap-2.5 text-left px-2.5 py-2 rounded-xl text-xs font-medium border transition bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50';
-        btn.innerHTML = `${getShapeIconSvg(shape.id, isSelected)}<span class="truncate">${shape.shortName}</span>`;
+          ? 'group w-full flex flex-col items-start gap-1.5 text-left p-2.5 rounded-xl text-xs font-semibold border-2 transition bg-gradient-to-br from-teal-50 to-emerald-50/60 text-teal-950 border-teal-500 shadow-xs'
+          : 'group w-full flex flex-col items-start gap-1.5 text-left p-2.5 rounded-xl text-xs font-medium border transition bg-slate-50/60 text-slate-700 border-slate-200/80 hover:bg-white hover:border-teal-300 hover:shadow-2xs';
+        btn.innerHTML = `
+          <div class="w-full flex items-center justify-between gap-1.5">
+            <div class="p-1.5 rounded-lg ${isSelected ? 'bg-white shadow-2xs' : 'bg-white/90 group-hover:bg-teal-50/60'} border border-slate-200/70 transition">
+              ${getShapeIconSvg(shape.id, isSelected)}
+            </div>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-teal-700 text-white' : 'bg-slate-200/70 text-slate-600'}">
+              ${metricHint}
+            </span>
+          </div>
+          <span class="truncate w-full leading-tight">${shape.shortName}</span>
+        `;
         btn.title = shape.name;
         btn.addEventListener('click', () => {
           state.selectedId[state.dim] = shape.id;
@@ -2104,7 +2293,7 @@
         }
       });
 
-      filteredMobileShapes.forEach((shape) => {
+      filteredShapes.forEach((shape) => {
         const isSelected = shape.id === activeId;
         const card = document.createElement('button');
         card.type = 'button';
@@ -2146,6 +2335,11 @@
       const data = computeAccumulation();
 
       dom.activeShapeTitle.textContent = shape.name;
+      dom.activeShapeBadge.textContent = shape.category === 'regular' ? 'Regular Shape' : 'Irregular / Compound';
+      dom.activeShapeBadge.className =
+        shape.category === 'regular'
+          ? 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80'
+          : 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80';
       dom.shapeFormulaBadge.textContent = shape.formula;
 
       dom.sweepSlider.value = String(Math.round(state.sweep * 1000));
@@ -2155,6 +2349,11 @@
       dom.densityValue.textContent = String(state.density[state.dim]);
 
       dom.playToggleBtn.textContent = state.playing ? 'Pause' : 'Play Sweep';
+      if (dom.toggleRateGraphBtn) {
+        dom.toggleRateGraphBtn.innerHTML = state.showRateGraph
+          ? '<span class="w-2 h-2 rounded-full bg-teal-600"></span><span>Live Curve: ON</span>'
+          : '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>Live Curve: OFF</span>';
+      }
 
       const formulaText = `${shape.formula || ''} ${shape.areaFormula || ''} ${shape.visualFormula || ''}`;
       const showsPi = /π|pi/i.test(formulaText) || ['1d-circle-arc', '1d-semicircle', '2d-disk', '3d-cylinder', '3d-sphere', '3d-cone', '3d-frustum'].includes(shape.id);
@@ -2549,6 +2748,44 @@
       dom.toggleSpecialConstantsBtn.addEventListener('click', () => {
         state.showConstantsGuide = !state.showConstantsGuide;
         updateUI();
+      });
+
+      if (dom.toggleRateGraphBtn) {
+        dom.toggleRateGraphBtn.addEventListener('click', () => {
+          state.showRateGraph = !state.showRateGraph;
+          updateUI();
+        });
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (!state.playing && state.sweep >= 0.999) state.sweep = 0;
+          state.playing = !state.playing;
+          updateUI();
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          state.playing = false;
+          state.sweep = Math.min(1, state.sweep + 0.03);
+          updateUI();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          state.playing = false;
+          state.sweep = Math.max(0, state.sweep - 0.03);
+          updateUI();
+        } else if (e.code === 'ArrowDown' || e.code === 'ArrowUp') {
+          e.preventDefault();
+          const list = getShapesForDim(state.dim);
+          const idx = list.findIndex((s) => s.id === state.selectedId[state.dim]);
+          const delta = e.code === 'ArrowDown' ? 1 : -1;
+          const next = list[(idx + delta + list.length) % list.length];
+          if (next) {
+            state.selectedId[state.dim] = next.id;
+            renderShapeList();
+            updateUI();
+          }
+        }
       });
 
       dom.dragModeSweepBtn.addEventListener('click', () => {
