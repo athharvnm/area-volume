@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <style>
+  <style>
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
@@ -247,9 +247,6 @@
           <div id="canvas-legend" class="flex flex-wrap items-center gap-3 text-[11px] text-slate-600"></div>
 
           <!-- Responsive Canvas Container -->
-          <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 lg:h-[430px] rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden shadow-inner">
-            <canvas id="lab-canvas"></canvas>
-            <!-- Desktop Live Accumulation Rate Spark-Overlay Toggle -->
           <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 lg:h-[430px] rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden shadow-inner">
             <canvas id="lab-canvas"></canvas>
             <button
@@ -1473,7 +1470,8 @@
       guideCardFourThirds: document.getElementById('guide-card-four-thirds'),
       guidePiText: document.getElementById('guide-pi-text'),
       guideThirdText: document.getElementById('guide-third-text'),
-      guideFourThirdsText: document.getElementById('guide-four-thirds-text')
+      guideFourThirdsText: document.getElementById('guide-four-thirds-text'),
+      toggleRateGraphBtn: document.getElementById('toggle-rate-graph-btn')
     };
 
     function getShapeIconSvg(shapeId, isSelected) {
@@ -1853,7 +1851,6 @@
       const gw = boxW - 20;
       const gh = boxH - 34;
 
-      // Baseline
       ctx.strokeStyle = '#e2e8f0';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -1861,7 +1858,6 @@
       ctx.lineTo(gx + gw, gy + gh);
       ctx.stroke();
 
-      // Draw rate profile (bars) and cumulative curve
       const samples = 32;
       const rates = [];
       for (let i = 0; i < samples; i++) {
@@ -1881,7 +1877,6 @@
       }
       const maxRate = Math.max(1e-6, ...rates);
 
-      // Slice rate bars
       const barW = gw / samples;
       for (let i = 0; i < samples; i++) {
         const u = i / samples;
@@ -1890,7 +1885,6 @@
         ctx.fillRect(gx + i * barW + 0.5, gy + gh - barH, Math.max(1, barW - 1), barH);
       }
 
-      // Cumulative S-curve / ramp
       ctx.beginPath();
       let cum = 0;
       const totalCum = rates.reduce((a, b) => a + b, 0) || 1;
@@ -1905,7 +1899,6 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Current sweep marker
       const sweepX = gx + state.sweep * gw;
       ctx.beginPath();
       ctx.moveTo(sweepX, gy);
@@ -2638,7 +2631,7 @@
           dom.mode3dVolumeBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-white text-teal-800 shadow-2xs';
           dom.mode3dSurfaceBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
           dom.modeSummaryPill.textContent = 'Slices → Volume (Inside)';
-          dom.activeShapeSubtitle.textContent = 'Stacking flat cross-sectional slices from bottom to top builds inside volume.';
+          dom.activeShapeSubtitle.textContent = 'Stacking slices from bottom to top builds inside volume.';
           dom.sweepLabel.textContent = 'Stack Slices Bottom → Top';
           dom.densityLabel.textContent = 'Number of Slices';
           dom.densityHelper.textContent = 'More slices make thinner layers inside the 3D shape.';
@@ -2674,7 +2667,7 @@
           dom.mode3dSurfaceBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-white text-amber-900 shadow-2xs';
           dom.mode3dVolumeBtn.className = 'py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
           dom.modeSummaryPill.textContent = 'Outer Faces → Surface Area';
-          dom.activeShapeSubtitle.textContent = 'Surface area is the sum of the areas of all outer surfaces wrapping the 3D shape.';
+          dom.activeShapeSubtitle.textContent = 'Surface area sums all outer surfaces wrapping the solid.';
           dom.sweepLabel.textContent = 'Sweep Outer Cover';
           dom.densityLabel.textContent = 'Contour Resolution';
           dom.densityHelper.textContent = 'Adjusts outer wireframe rings shown on the 3D shape.';
@@ -2728,6 +2721,12 @@
     function setDimension(newDim) {
       if (state.dim === newDim) return;
       state.dim = newDim;
+      if (newDim === '3d') {
+        const list3d = getShapesForDim('3d');
+        if (!list3d.some((s) => s.id === state.selectedId['3d'])) {
+          state.selectedId['3d'] = list3d[0].id;
+        }
+      }
       renderShapeList();
       updateUI();
     }
