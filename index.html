@@ -118,8 +118,8 @@
 
     <!-- Main Two-Column Grid -->
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
-      <!-- Right/Primary Column First on Mobile so Canvas & Metrics Appear Immediately -->
-      <section class="order-1 lg:order-2 lg:col-span-8 space-y-4 lg:space-y-5">
+      <!-- Primary Column: Canvas & Metrics on Left on Desktop, First on Mobile -->
+      <section class="order-1 lg:order-1 lg:col-span-8 space-y-4 lg:space-y-5">
         <!-- Canvas Card -->
         <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 lg:p-5 shadow-sm space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -362,8 +362,8 @@
         </div>
       </section>
 
-      <!-- Left/Secondary Column: Desktop Shape Studio Gallery & Controls -->
-      <section class="order-2 lg:order-1 lg:col-span-4 lg:sticky lg:top-5 space-y-4">
+      <!-- Secondary Column: Desktop Shape Studio Gallery & Controls on Right on Desktop -->
+      <section class="order-2 lg:order-2 lg:col-span-4 lg:sticky lg:top-5 space-y-4">
         <!-- Desktop Interactive Shape Studio Gallery -->
         <div class="hidden lg:block bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
           <div class="flex items-center justify-between gap-2">
@@ -483,7 +483,7 @@
         <!-- Shape Selector Card (Desktop Sidebar) -->
         <div class="hidden lg:block bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-900">Choose a Shape</h2>
+            <h2 class="text-sm font-bold text-slate-900">Choose Shape</h2>
             <span id="shape-count-badge" class="text-xs font-mono text-slate-500">10 shapes</span>
           </div>
 
