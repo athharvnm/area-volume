@@ -1709,10 +1709,10 @@
     function resizeCanvas() {
       const rect = dom.canvasWrapper.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const width = Math.max(240, Math.floor(rect.width));
-      const height = Math.max(220, Math.floor(rect.height));
-      dom.canvas.width = Math.floor(width * dpr);
-      dom.canvas.height = Math.floor(height * dpr);
+      const width = Math.max(240, Math.floor(rect.width || dom.canvasWrapper.clientWidth || 600));
+      const height = Math.max(220, Math.floor(rect.height || dom.canvasWrapper.clientHeight || 360));
+      dom.canvas.width = Math.max(1, Math.floor(width * dpr));
+      dom.canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       renderCanvas();
     }
@@ -2892,15 +2892,28 @@
       });
 
       window.addEventListener('resize', resizeCanvas);
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => resizeCanvas());
+        ro.observe(dom.canvasWrapper);
+      }
     }
 
-    window.addEventListener('load', () => {
+    function initApp() {
+      if (window.__geometryStudioInitialized) return;
+      window.__geometryStudioInitialized = true;
       bindEvents();
       renderShapeList();
       updateUI();
       resizeCanvas();
       requestAnimationFrame(animationTick);
-    });
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initApp();
+    } else {
+      window.addEventListener('DOMContentLoaded', initApp, { once: true });
+      window.addEventListener('load', initApp, { once: true });
+    }
   </script>
 </body>
 </html>
