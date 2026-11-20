@@ -33,40 +33,89 @@
       scrollbar-width: none;
     }
     @media (min-width: 1024px) {
+      html {
+        scrollbar-gutter: stable;
+      }
+      body::-webkit-scrollbar,
       .studio-scroll::-webkit-scrollbar {
-        width: 6px;
+        width: 12px;
       }
+      body::-webkit-scrollbar-track,
       .studio-scroll::-webkit-scrollbar-track {
-        background: transparent;
+        background: rgba(226, 232, 240, 0.72);
+        border-left: 1px solid rgba(203, 213, 225, 0.85);
       }
+      body::-webkit-scrollbar-thumb,
       .studio-scroll::-webkit-scrollbar-thumb {
-        background-color: rgba(148, 163, 184, 0.45);
+        background: linear-gradient(180deg, #0f766e 0%, #059669 100%);
         border-radius: 9999px;
+        border: 2px solid rgba(226, 232, 240, 0.72);
       }
+      body::-webkit-scrollbar-thumb:hover,
       .studio-scroll::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(100, 116, 139, 0.65);
+        background: linear-gradient(180deg, #115e59 0%, #047857 100%);
       }
     }
   </style>
 </head>
 <body class="bg-gradient-to-br from-slate-100 via-slate-50 to-teal-50/40 text-slate-900 min-h-screen antialiased selection:bg-teal-100 selection:text-teal-900">
-  <div class="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5">
-    <!-- Header Bar -->
-    <header class="bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-2xl p-4 sm:p-5 lg:px-6 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+  <!-- Right-edge vertical scroll navigation rail for large screens -->
+  <aside
+    aria-label="Vertical page scroll navigation"
+    class="hidden lg:flex fixed right-2.5 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-300/90 rounded-2xl p-1.5 shadow-lg"
+  >
+    <button
+      id="scroll-top-btn"
+      type="button"
+      title="Scroll to top"
+      aria-label="Scroll to top"
+      class="w-8 h-8 rounded-xl flex items-center justify-center bg-teal-50 hover:bg-teal-600 text-teal-800 hover:text-white border border-teal-200/80 transition shadow-2xs"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 4.5a.75.75 0 0 1 .53.22l5 5a.75.75 0 1 1-1.06 1.06L10 6.81 5.53 11.28a.75.75 0 0 1-1.06-1.06l5-5A.75.75 0 0 1 10 4.5Z" clip-rule="evenodd" />
+      </svg>
+    </button>
+
+    <div
+      id="scroll-track-rail"
+      title="Click or drag along rail to scroll vertically"
+      class="relative w-2.5 h-36 rounded-full bg-slate-200/90 border border-slate-300/80 cursor-pointer overflow-hidden"
+    >
+      <div
+        id="scroll-rail-thumb"
+        class="w-full h-10 rounded-full bg-gradient-to-b from-teal-600 to-emerald-600 shadow-2xs transition-[height] duration-75"
+        style="transform: translateY(0px);"
+      ></div>
+    </div>
+
+    <span id="scroll-progress-label" class="font-mono text-[10px] font-bold text-slate-600 tabular-nums">0%</span>
+
+    <button
+      id="scroll-bottom-btn"
+      type="button"
+      title="Scroll to bottom"
+      aria-label="Scroll to bottom"
+      class="w-8 h-8 rounded-xl flex items-center justify-center bg-teal-50 hover:bg-teal-600 text-teal-800 hover:text-white border border-teal-200/80 transition shadow-2xs"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 15.5a.75.75 0 0 1-.53-.22l-5-5a.75.75 0 0 1 1.06-1.06L10 13.19l4.47-4.47a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-.53.22Z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </aside>
+
+  <div class="max-w-[1440px] mx-auto px-3 sm:px-6 lg:pl-8 lg:pr-14 py-4 sm:py-6 space-y-5">
+    <!-- Top Studio Header with Dimension Tabs -->
+    <header class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div class="space-y-1">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
-            <span class="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse"></span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
             Visual Geometry Lab
           </span>
           <span id="mode-summary-pill" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
             Points → Length
           </span>
-          <span class="hidden lg:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-slate-100/80 text-slate-500 border border-slate-200/70">
-            Shortcuts: Space = Play · ←/→ = Scrub · ↑/↓ = Shape
-          </span>
         </div>
-        <h1 class="text-xl sm:text-2xl lg:text-[26px] font-extrabold tracking-tight text-slate-900">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
           Slice &amp; Sum Geometry Studio
         </h1>
         <p class="text-xs sm:text-sm text-slate-600 max-w-3xl">
@@ -74,39 +123,38 @@
         </p>
       </div>
 
-      <!-- Dimension Switcher -->
-      <nav aria-label="Dimension mode" class="grid grid-cols-3 gap-1.5 bg-slate-100/90 p-1.5 rounded-xl border border-slate-200/90 shrink-0 lg:min-w-[340px]">
+      <nav aria-label="Dimension mode" class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80 shrink-0">
         <button
           id="dim-btn-1d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs"
+          class="dim-tab px-2.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-teal-800 shadow-xs"
         >
           1D Length
         </button>
         <button
           id="dim-btn-2d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+          class="dim-tab px-2.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
         >
           2D Area
         </button>
         <button
           id="dim-btn-3d"
           type="button"
-          class="dim-tab px-3 sm:px-4 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+          class="dim-tab px-2.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
         >
           3D Solids
         </button>
       </nav>
     </header>
 
-    <!-- Mobile & Tablet Visual Shape Picker (Visible on < lg screens right at the top) -->
-    <section id="mobile-shape-section" aria-label="Shape gallery" class="lg:hidden bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
+    <!-- Mobile Shape Selector Strip -->
+    <section class="lg:hidden bg-white border border-slate-200/90 rounded-2xl p-3 shadow-xs space-y-2.5">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 min-w-0">
           <h2 class="text-xs font-bold text-slate-900 shrink-0">Choose Shape</h2>
           <span id="mobile-shape-count" class="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">10</span>
-          <span id="mobile-collapsed-shape-pill" class="hidden text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full truncate"></span>
+          <span id="mobile-collapsed-shape-pill" class="hidden text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full break-words leading-snug"></span>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <div id="mobile-filter-wrap" class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200/80 text-[11px] font-semibold">
@@ -117,9 +165,12 @@
           <button
             id="mobile-toggle-gallery-btn"
             type="button"
-            class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200/80 transition"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white border border-teal-700/40 shadow-sm hover:shadow transition active:scale-[0.98]"
           >
-            Change
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+            </svg>
+            <span>Change Shape</span>
           </button>
         </div>
       </div>
@@ -133,12 +184,12 @@
         <!-- Canvas Card -->
         <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 lg:p-5 shadow-sm space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h2 id="active-shape-title" class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 break-words">
+                <h2 id="active-shape-title" class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 break-words whitespace-normal">
                   Straight Line Segment (12 cm)
                 </h2>
-                <span id="active-shape-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80">
+                <span id="active-shape-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80 shrink-0">
                   Regular
                 </span>
               </div>
@@ -153,9 +204,12 @@
                 <button
                   id="play-toggle-btn"
                   type="button"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white transition shadow-2xs"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white transition shadow-2xs"
                 >
-                  Play Sweep
+                  <svg id="play-toggle-icon" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" />
+                  </svg>
+                  <span id="play-toggle-label">Play</span>
                 </button>
                 <button
                   id="reset-btn"
@@ -196,6 +250,8 @@
           <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 lg:h-[430px] rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden shadow-inner">
             <canvas id="lab-canvas"></canvas>
             <!-- Desktop Live Accumulation Rate Spark-Overlay Toggle -->
+          <div id="canvas-wrapper" class="relative w-full h-64 sm:h-96 lg:h-[430px] rounded-xl bg-slate-50 border border-slate-200/90 overflow-hidden shadow-inner">
+            <canvas id="lab-canvas"></canvas>
             <button
               id="toggle-rate-graph-btn"
               type="button"
@@ -376,11 +432,11 @@
       <section class="order-2 lg:order-2 lg:col-span-4 lg:sticky lg:top-5 space-y-4">
         <!-- Desktop Interactive Shape Studio Gallery -->
         <div id="desktop-shape-card" class="hidden lg:block bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2 min-w-0 flex-1">
               <h2 class="text-sm font-bold text-slate-900 shrink-0">Shape Studio</h2>
               <span id="shape-count-badge" class="text-[11px] font-mono text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full shrink-0">10 shapes</span>
-              <span id="desktop-collapsed-shape-pill" class="hidden text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full truncate"></span>
+              <span id="desktop-collapsed-shape-pill" class="hidden text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded-full break-words leading-snug"></span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               <div id="desktop-filter-wrap" class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200/80 text-[11px] font-semibold">
@@ -391,9 +447,12 @@
               <button
                 id="desktop-toggle-gallery-btn"
                 type="button"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200/80 transition"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white border border-teal-700/40 shadow-sm hover:shadow transition active:scale-[0.98]"
               >
-                Change Shape
+                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                </svg>
+                <span>Change Shape</span>
               </button>
             </div>
           </div>
@@ -1352,8 +1411,14 @@
       regularShapesList: document.getElementById('regular-shapes-list'),
       irregularShapesList: document.getElementById('irregular-shapes-list'),
       playToggleBtn: document.getElementById('play-toggle-btn'),
+      playToggleIcon: document.getElementById('play-toggle-icon'),
+      playToggleLabel: document.getElementById('play-toggle-label'),
       resetBtn: document.getElementById('reset-btn'),
-      toggleRateGraphBtn: document.getElementById('toggle-rate-graph-btn'),
+      scrollTopBtn: document.getElementById('scroll-top-btn'),
+      scrollBottomBtn: document.getElementById('scroll-bottom-btn'),
+      scrollTrackRail: document.getElementById('scroll-track-rail'),
+      scrollRailThumb: document.getElementById('scroll-rail-thumb'),
+      scrollProgressLabel: document.getElementById('scroll-progress-label'),
       sweepLabel: document.getElementById('sweep-label'),
       sweepSlider: document.getElementById('sweep-slider'),
       sweepPercent: document.getElementById('sweep-percent'),
@@ -2247,11 +2312,12 @@
       const filteredShapes = shapes.filter((s) => (filter === 'all' ? true : s.category === filter));
       dom.shapeCountBadge.textContent = `${filteredShapes.length} shapes`;
       dom.mobileShapeCount.textContent = `${filteredShapes.length}`;
+      dom.regularShapesList.innerHTML = '';
+      dom.irregularShapesList.innerHTML = '';
+      dom.mobileShapeGallery.innerHTML = '';
 
-      if (activeShape) {
-        dom.desktopCollapsedShapePill.textContent = activeShape.shortName;
-        dom.mobileCollapsedShapePill.textContent = activeShape.shortName;
-      }
+      dom.desktopCollapsedShapePill.textContent = activeShape.shortName;
+      dom.mobileCollapsedShapePill.textContent = activeShape.shortName;
 
       dom.desktopCollapsedShapePill.classList.toggle('hidden', !isCollapsed);
       dom.mobileCollapsedShapePill.classList.toggle('hidden', !isCollapsed);
@@ -2259,12 +2325,12 @@
       dom.mobileFilterWrap.classList.toggle('hidden', isCollapsed);
       dom.desktopShapeGalleryBody.classList.toggle('hidden', isCollapsed);
       dom.mobileShapeGallery.classList.toggle('hidden', isCollapsed);
-      dom.desktopToggleGalleryBtn.textContent = isCollapsed ? 'Change Shape' : 'Collapse';
-      dom.mobileToggleGalleryBtn.textContent = isCollapsed ? 'Change' : 'Hide';
-
-      dom.regularShapesList.innerHTML = '';
-      dom.irregularShapesList.innerHTML = '';
-      dom.mobileShapeGallery.innerHTML = '';
+      dom.desktopToggleGalleryBtn.innerHTML = isCollapsed
+        ? `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg><span>Change Shape</span>`
+        : `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" /></svg><span>Done</span>`;
+      dom.mobileToggleGalleryBtn.innerHTML = isCollapsed
+        ? `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg><span>Change Shape</span>`
+        : `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" /></svg><span>Done</span>`;
 
       document.querySelectorAll('.shape-filter-btn').forEach((btn) => {
         const isFilterActive = btn.dataset.filter === filter;
@@ -2361,15 +2427,35 @@
         shape.category === 'regular'
           ? 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200/80'
           : 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80';
-      dom.shapeFormulaBadge.textContent = shape.formula;
+      if (dom.shapeFormulaBadge) {
+        dom.shapeFormulaBadge.textContent = shape.formula;
+      }
 
-      dom.sweepSlider.value = String(Math.round(state.sweep * 1000));
-      dom.sweepPercent.textContent = `${Math.round(state.sweep * 100)}%`;
+      if (dom.sweepSlider) {
+        dom.sweepSlider.value = String(Math.round(state.sweep * 1000));
+      }
+      if (dom.sweepPercent) {
+        dom.sweepPercent.textContent = `${Math.round(state.sweep * 100)}%`;
+      }
 
-      dom.densitySlider.value = String(state.density[state.dim]);
-      dom.densityValue.textContent = String(state.density[state.dim]);
+      if (dom.densitySlider) {
+        dom.densitySlider.value = String(state.density[state.dim]);
+      }
+      if (dom.densityValue) {
+        dom.densityValue.textContent = String(state.density[state.dim]);
+      }
 
-      dom.playToggleBtn.textContent = state.playing ? 'Pause' : 'Play Sweep';
+      if (dom.playToggleLabel && dom.playToggleIcon) {
+        if (state.playing) {
+          dom.playToggleLabel.textContent = 'Pause';
+          dom.playToggleIcon.innerHTML = `<path d="M5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 7.25 3h-1.5ZM12.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75a.75.75 0 0 0-.75-.75h-1.5Z" />`;
+        } else {
+          dom.playToggleLabel.textContent = 'Play';
+          dom.playToggleIcon.innerHTML = `<path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" />`;
+        }
+      } else {
+        dom.playToggleBtn.textContent = state.playing ? 'Pause' : 'Play';
+      }
       if (dom.toggleRateGraphBtn) {
         dom.toggleRateGraphBtn.innerHTML = state.showRateGraph
           ? '<span class="w-2 h-2 rounded-full bg-teal-600"></span><span>Live Curve: ON</span>'
@@ -2705,12 +2791,18 @@
     }
 
     function bindEvents() {
-      dom.dimBtn1d.addEventListener('click', () => setDimension('1d'));
-      dom.dimBtn2d.addEventListener('click', () => setDimension('2d'));
-      dom.dimBtn3d.addEventListener('click', () => setDimension('3d'));
+      const on = (el, eventName, handler, options) => {
+        if (el && typeof el.addEventListener === 'function') {
+          el.addEventListener(eventName, handler, options);
+        }
+      };
+
+      on(dom.dimBtn1d, 'click', () => setDimension('1d'));
+      on(dom.dimBtn2d, 'click', () => setDimension('2d'));
+      on(dom.dimBtn3d, 'click', () => setDimension('3d'));
 
       document.querySelectorAll('.shape-filter-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
+        on(btn, 'click', () => {
           state.mobileShapeFilter = btn.dataset.filter || 'all';
           renderShapeList();
         });
@@ -2720,21 +2812,21 @@
         state.shapeGalleryCollapsed = !state.shapeGalleryCollapsed;
         renderShapeList();
       };
-      dom.desktopToggleGalleryBtn.addEventListener('click', toggleGalleryCollapse);
-      dom.mobileToggleGalleryBtn.addEventListener('click', toggleGalleryCollapse);
+      on(dom.desktopToggleGalleryBtn, 'click', toggleGalleryCollapse);
+      on(dom.mobileToggleGalleryBtn, 'click', toggleGalleryCollapse);
 
-      dom.sweepSlider.addEventListener('input', (e) => {
+      on(dom.sweepSlider, 'input', (e) => {
         state.playing = false;
         state.sweep = Number(e.target.value) / 1000;
         updateUI();
       });
 
-      dom.densitySlider.addEventListener('input', (e) => {
+      on(dom.densitySlider, 'input', (e) => {
         state.density[state.dim] = Number(e.target.value);
         updateUI();
       });
 
-      dom.playToggleBtn.addEventListener('click', () => {
+      on(dom.playToggleBtn, 'click', () => {
         if (!state.playing && state.sweep >= 0.999) {
           state.sweep = 0;
         }
@@ -2742,54 +2834,99 @@
         updateUI();
       });
 
-      dom.resetBtn.addEventListener('click', () => {
+      on(dom.resetBtn, 'click', () => {
         state.playing = false;
         state.sweep = 0;
         updateUI();
       });
 
-      dom.toggle2dPerimeterBtn.addEventListener('click', () => {
+      on(dom.toggle2dPerimeterBtn, 'click', () => {
         state.show2dPerimeter = !state.show2dPerimeter;
         updateUI();
       });
 
-      dom.mode3dVolumeBtn.addEventListener('click', () => {
+      on(dom.mode3dVolumeBtn, 'click', () => {
         state.focus3d = 'volume';
         updateUI();
       });
 
-      dom.mode3dSurfaceBtn.addEventListener('click', () => {
+      on(dom.mode3dSurfaceBtn, 'click', () => {
         state.focus3d = 'surface';
         updateUI();
       });
 
-      dom.levelKidsBtn.addEventListener('click', () => {
+      on(dom.levelKidsBtn, 'click', () => {
         state.intuitionLevel = 'kids';
         updateUI();
       });
 
-      dom.levelCalcBtn.addEventListener('click', () => {
+      on(dom.levelCalcBtn, 'click', () => {
         state.intuitionLevel = 'calc';
         updateUI();
       });
 
-      dom.toggleSpecialConstantsBtn.addEventListener('click', () => {
+      on(dom.toggleSpecialConstantsBtn, 'click', () => {
         state.showConstantsGuide = !state.showConstantsGuide;
         updateUI();
       });
 
-      if (dom.toggleRateGraphBtn) {
-        dom.toggleRateGraphBtn.addEventListener('click', () => {
-          state.showRateGraph = !state.showRateGraph;
-          updateUI();
-        });
-      }
+      on(dom.toggleRateGraphBtn, 'click', () => {
+        state.showRateGraph = !state.showRateGraph;
+        updateUI();
+      });
+
+      const updateScrollRail = () => {
+        if (!dom.scrollTrackRail || !dom.scrollRailThumb || !dom.scrollProgressLabel) return;
+        const docEl = document.documentElement;
+        const maxScroll = Math.max(0, docEl.scrollHeight - window.innerHeight);
+        const progress = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 0;
+        dom.scrollProgressLabel.textContent = `${Math.round(progress * 100)}%`;
+
+        const trackHeight = dom.scrollTrackRail.clientHeight || 144;
+        const thumbHeight = Math.max(24, Math.min(trackHeight * 0.45, (window.innerHeight / Math.max(1, docEl.scrollHeight)) * trackHeight));
+        dom.scrollRailThumb.style.height = `${thumbHeight}px`;
+        const maxThumbTravel = Math.max(0, trackHeight - thumbHeight);
+        dom.scrollRailThumb.style.transform = `translateY(${progress * maxThumbTravel}px)`;
+      };
+
+      on(dom.scrollTopBtn, 'click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      on(dom.scrollBottomBtn, 'click', () => {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+      });
+
+      let isDraggingRail = false;
+      const scrollFromRailClientY = (clientY) => {
+        if (!dom.scrollTrackRail) return;
+        const rect = dom.scrollTrackRail.getBoundingClientRect();
+        const ratio = Math.min(1, Math.max(0, (clientY - rect.top) / Math.max(1, rect.height)));
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        window.scrollTo({ top: ratio * maxScroll, behavior: isDraggingRail ? 'auto' : 'smooth' });
+      };
+
+      on(dom.scrollTrackRail, 'mousedown', (e) => {
+        isDraggingRail = true;
+        scrollFromRailClientY(e.clientY);
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingRail) return;
+        scrollFromRailClientY(e.clientY);
+      });
+      window.addEventListener('mouseup', () => {
+        isDraggingRail = false;
+      });
+      window.addEventListener('scroll', updateScrollRail, { passive: true });
+      window.addEventListener('resize', updateScrollRail);
+      requestAnimationFrame(updateScrollRail);
 
       window.addEventListener('keydown', (e) => {
-        if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-        if (e.code === 'Space') {
+        if (e.code === 'Space' && document.activeElement && document.activeElement.tagName !== 'INPUT') {
           e.preventDefault();
-          if (!state.playing && state.sweep >= 0.999) state.sweep = 0;
+          if (!state.playing && state.sweep >= 0.999) {
+            state.sweep = 0;
+          }
           state.playing = !state.playing;
           updateUI();
         } else if (e.code === 'ArrowRight') {
@@ -2816,50 +2953,50 @@
         }
       });
 
-      dom.dragModeSweepBtn.addEventListener('click', () => {
+      on(dom.dragModeSweepBtn, 'click', () => {
         state.dragMode = 'sweep';
         updateUI();
       });
 
-      dom.dragModeTurnBtn.addEventListener('click', () => {
+      on(dom.dragModeTurnBtn, 'click', () => {
         state.dragMode = 'turn';
         updateUI();
       });
 
-      dom.dragModeMoveBtn.addEventListener('click', () => {
+      on(dom.dragModeMoveBtn, 'click', () => {
         state.dragMode = 'move';
         updateUI();
       });
 
-      dom.resetTransformBtn.addEventListener('click', () => {
+      on(dom.resetTransformBtn, 'click', () => {
         if (state.dim === '2d' || state.dim === '3d') {
           state.transform[state.dim] = { angleDeg: 0, dx: 0, dy: 0 };
           updateUI();
         }
       });
 
-      dom.turnSlider.addEventListener('input', (e) => {
+      on(dom.turnSlider, 'input', (e) => {
         if (state.dim === '2d' || state.dim === '3d') {
           state.transform[state.dim].angleDeg = Number(e.target.value);
           updateUI();
         }
       });
 
-      dom.moveXSlider.addEventListener('input', (e) => {
+      on(dom.moveXSlider, 'input', (e) => {
         if (state.dim === '2d' || state.dim === '3d') {
           state.transform[state.dim].dx = Number(e.target.value) / 10;
           updateUI();
         }
       });
 
-      dom.moveYSlider.addEventListener('input', (e) => {
+      on(dom.moveYSlider, 'input', (e) => {
         if (state.dim === '2d' || state.dim === '3d') {
           state.transform[state.dim].dy = Number(e.target.value) / 10;
           updateUI();
         }
       });
 
-      dom.canvas.addEventListener('mousedown', (e) => {
+      on(dom.canvas, 'mousedown', (e) => {
         state.playing = false;
         state.isScrubbing = true;
         state.lastPointer = { x: e.clientX, y: e.clientY };
@@ -2874,7 +3011,7 @@
         state.lastPointer = null;
       });
 
-      dom.canvas.addEventListener('touchstart', (e) => {
+      on(dom.canvas, 'touchstart', (e) => {
         state.playing = false;
         state.isScrubbing = true;
         if (e.touches && e.touches.length > 0) {
@@ -2882,7 +3019,7 @@
         }
         scrubFromPointerEvent(e);
       }, { passive: true });
-      dom.canvas.addEventListener('touchmove', (e) => {
+      on(dom.canvas, 'touchmove', (e) => {
         if (!state.isScrubbing) return;
         scrubFromPointerEvent(e);
       }, { passive: true });
@@ -2892,7 +3029,7 @@
       });
 
       window.addEventListener('resize', resizeCanvas);
-      if (typeof ResizeObserver !== 'undefined') {
+      if (typeof ResizeObserver !== 'undefined' && dom.canvasWrapper) {
         const ro = new ResizeObserver(() => resizeCanvas());
         ro.observe(dom.canvasWrapper);
       }
